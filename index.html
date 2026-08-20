@@ -372,6 +372,16 @@ function init() {
     document.getElementById('inv-date').value = new Date().toISOString().split('T')[0];
     refreshAll();
     addItemRow();
+    // Event delegation for purchase table actions
+    document.getElementById('purchase-table').addEventListener('click', function(e) {
+        const target = e.target.closest('button');
+        if (!target) return;
+        const action = target.dataset.action;
+        const id = target.dataset.id;
+        if (action === 'edit') editInvoice(id);
+        else if (action === 'view') viewInvoice(id);
+        else if (action === 'delete') deleteInvoice(id);
+    });
 }
 
 // ============ REFRESH ALL ============
@@ -567,6 +577,7 @@ function updateInvoiceTotals() {
 
 // ============ EDIT INVOICE ============
 function editInvoice(id) {
+    console.log('Editing invoice:', id);
     const inv = appData.invoices.find(i => i.id === id);
     if (!inv) { alert('Invoice not found'); return; }
     
@@ -838,13 +849,13 @@ function renderPurchases() {
             <td>£${inv.total.toFixed(2)}</td>
             <td>
                 <div class="action-buttons">
-                    <button class="edit-btn" onclick="editInvoice('${inv.id}')" title="Edit">
+                    <button class="edit-btn" data-action="edit" data-id="${inv.id}" title="Edit">
                         <i class="fas fa-edit"></i> Edit
                     </button>
-                    <button class="view-btn" onclick="viewInvoice('${inv.id}')" title="View">
+                    <button class="view-btn" data-action="view" data-id="${inv.id}" title="View">
                         <i class="fas fa-eye"></i> View
                     </button>
-                    <button class="delete-btn" onclick="deleteInvoice('${inv.id}')" title="Delete">
+                    <button class="delete-btn" data-action="delete" data-id="${inv.id}" title="Delete">
                         <i class="fas fa-trash"></i> Delete
                     </button>
                 </div>
