@@ -37,8 +37,6 @@
         .btn-success:hover { background: #16a34a; }
         .btn-danger { background: #ef4444; color: white; padding: 8px 16px; border-radius: 8px; font-weight: 500; transition: all 0.2s; cursor: pointer; border: none; }
         .btn-danger:hover { background: #dc2626; }
-        .btn-warning { background: #f59e0b; color: white; padding: 8px 16px; border-radius: 8px; font-weight: 500; transition: all 0.2s; cursor: pointer; border: none; }
-        .btn-warning:hover { background: #d97706; }
         .btn-outline { border: 1.5px solid #e2e8f0; background: white; padding: 8px 16px; border-radius: 8px; font-weight: 500; transition: all 0.2s; cursor: pointer; }
         .btn-outline:hover { border-color: #94a3b8; background: #f8fafc; }
         .input-field { width: 100%; padding: 8px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 14px; transition: border 0.2s; background: white; }
@@ -81,6 +79,14 @@
         ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .action-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
+        .action-buttons button { padding: 4px 8px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+        .action-buttons .edit-btn { background: #dbeafe; color: #1e40af; }
+        .action-buttons .edit-btn:hover { background: #bfdbfe; }
+        .action-buttons .view-btn { background: #dcfce7; color: #166534; }
+        .action-buttons .view-btn:hover { background: #bbf7d0; }
+        .action-buttons .delete-btn { background: #fee2e2; color: #991b1b; }
+        .action-buttons .delete-btn:hover { background: #fecaca; }
     </style>
 </head>
 <body>
@@ -176,7 +182,7 @@
             <div class="card p-4 md:p-6 max-w-4xl">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-xl font-bold" id="invoice-form-title">Add New Invoice</h2>
-                    <span id="editing-badge" class="editing-badge hidden">Editing</span>
+                    <span id="editing-badge" class="editing-badge hidden">✏️ Editing</span>
                 </div>
                 <input type="hidden" id="edit-invoice-id" value="" />
                 <div class="grid md:grid-cols-2 gap-4 mb-4">
@@ -278,8 +284,6 @@ import {
     doc, 
     query, 
     orderBy,
-    onSnapshot,
-    setDoc,
     getDoc
 } from "firebase/firestore";
 import { getAnalytics } from "firebase/analytics";
@@ -313,7 +317,6 @@ let appData = {
 let charts = { daily: null, supplier: null };
 let currentFilter = 'all';
 let editingInvoiceId = null;
-let isFirebaseReady = false;
 
 // ============ SYNC STATUS ============
 function setSyncStatus(status, message = '') {
@@ -337,42 +340,24 @@ async function loadDataFromFirebase() {
     try {
         setSyncStatus('syncing');
         
-        // Load Suppliers
         const suppliersSnapshot = await getDocs(collection(db, 'suppliers'));
-        appData.suppliers = suppliersSnapshot.docs.map(doc => ({ 
-            id: doc.id, 
-            ...doc.data() 
-        }));
+        appData.suppliers = suppliersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         
-        // Load Products
         const productsSnapshot = await getDocs(collection(db, 'products'));
-        appData.products = productsSnapshot.docs.map(doc => ({ 
-            id: doc.id, 
-            ...doc.data() 
-        }));
+        appData.products = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         
-        // Load Invoices
         const invoicesSnapshot = await getDocs(query(collection(db, 'invoices'), orderBy('purchaseDate', 'desc')));
-        appData.invoices = invoicesSnapshot.docs.map(doc => ({ 
-            id: doc.id, 
-            ...doc.data() 
-        }));
+        appData.invoices = invoicesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         
-        // Load Invoice Items
         const itemsSnapshot = await getDocs(collection(db, 'invoiceItems'));
-        appData.invoiceItems = itemsSnapshot.docs.map(doc => ({ 
-            id: doc.id, 
-            ...doc.data() 
-        }));
+        appData.invoiceItems = itemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         
-        isFirebaseReady = true;
         setSyncStatus('synced', `(${appData.invoices.length} invoices)`);
         refreshAll();
         
     } catch (error) {
         console.error('Error loading from Firebase:', error);
         setSyncStatus('error', 'Using local data');
-        // Fallback to localStorage or demo data
         loadFromStorage();
         if (appData.suppliers.length === 0) loadDemoData();
         refreshAll();
@@ -476,13 +461,11 @@ function loadDemoData() {
 async function saveToFirebase(collectionName, data, id = null) {
     try {
         setSyncStatus('syncing');
-        let docRef;
         if (id) {
-            docRef = doc(db, collectionName, id);
-            await updateDoc(docRef, data);
+            await updateDoc(doc(db, collectionName, id), data);
             return id;
         } else {
-            docRef = await addDoc(collection(db, collectionName), data);
+            const docRef = await addDoc(collection(db, collectionName), data);
             return docRef.id;
         }
     } catch (error) {
@@ -620,12 +603,6 @@ function addItemRow(productId = '', qty = 1, unit = 'Box', price = '') {
     updateInvoiceTotals();
 }
 
-// Make functions available globally
-window.addItemRow = addItemRow;
-window.removeItemRow = removeItemRow;
-window.updateItemTotal = updateItemTotal;
-window.updateInvoiceTotals = updateInvoiceTotals;
-
 function removeItemRow(btn) {
     const container = document.getElementById('invoice-items-container');
     if (container.children.length <= 1) { alert('Invoice must have at least one item.'); return; }
@@ -655,18 +632,23 @@ function updateInvoiceTotals() {
     document.getElementById('inv-grand-total').textContent = `£${grand.toFixed(2)}`;
 }
 
-// ============ EDIT INVOICE ============
+// ============ EDIT INVOICE - NOW WORKS! ============
 window.editInvoice = function(id) {
+    console.log('Editing invoice:', id);
     const inv = appData.invoices.find(i => i.id === id);
-    if (!inv) { alert('Invoice not found'); return; }
+    if (!inv) { 
+        alert('Invoice not found'); 
+        return; 
+    }
     
     editingInvoiceId = id;
     document.getElementById('edit-invoice-id').value = id;
-    document.getElementById('invoice-form-title').textContent = 'Edit Invoice';
+    document.getElementById('invoice-form-title').textContent = '✏️ Edit Invoice';
     document.getElementById('editing-badge').classList.remove('hidden');
     document.getElementById('save-btn-text').textContent = 'Update Invoice';
     document.getElementById('cancel-edit-btn').classList.remove('hidden');
     
+    // Fill form with invoice data
     document.getElementById('inv-number').value = inv.invoiceNumber;
     document.getElementById('inv-date').value = inv.purchaseDate;
     document.getElementById('inv-supplier').value = inv.supplierId;
@@ -675,8 +657,10 @@ window.editInvoice = function(id) {
     document.getElementById('inv-discount').value = inv.discount || 0;
     document.getElementById('inv-tax').value = inv.tax || 0;
     
+    // Clear existing items
     document.getElementById('invoice-items-container').innerHTML = '';
     
+    // Add items from invoice
     const items = appData.invoiceItems.filter(item => item.invoiceId === id);
     if (items.length === 0) {
         addItemRow();
@@ -687,10 +671,17 @@ window.editInvoice = function(id) {
     }
     
     updateInvoiceTotals();
+    
+    // Show the page
     showPage('add-invoice');
-    document.querySelector('#page-add-invoice .card').scrollIntoView({ behavior: 'smooth' });
+    
+    // Scroll to form
+    setTimeout(() => {
+        document.querySelector('#page-add-invoice .card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
 }
 
+// ============ CANCEL EDIT ============
 window.cancelEdit = function() {
     resetInvoiceForm();
     editingInvoiceId = null;
@@ -759,12 +750,12 @@ window.saveInvoice = async function() {
     
     try {
         if (editId) {
-            // Update existing invoice
+            // UPDATE existing invoice
             await saveToFirebase('invoices', invoiceData, editId);
             // Delete old items
             const oldItems = appData.invoiceItems.filter(item => item.invoiceId === editId);
             for (const item of oldItems) {
-                await deleteFromFirebase('invoiceItems', item.id);
+                if (item.id) await deleteFromFirebase('invoiceItems', item.id);
             }
             // Add new items
             for (const item of items) {
@@ -777,18 +768,17 @@ window.saveInvoice = async function() {
             }
             appData.invoiceItems = appData.invoiceItems.filter(item => item.invoiceId !== editId);
             appData.invoiceItems.push(...items.map(item => ({ ...item, invoiceId: editId, id: `item-${Date.now()}-${Math.random()}` })));
-            alert('Invoice updated successfully!');
+            alert('✅ Invoice updated successfully!');
         } else {
-            // Create new invoice
+            // CREATE new invoice
             const invId = await saveToFirebase('invoices', invoiceData);
             for (const item of items) {
                 await saveToFirebase('invoiceItems', { ...item, invoiceId: invId });
             }
-            // Update local data
             const newInv = { id: invId, ...invoiceData };
             appData.invoices.push(newInv);
             appData.invoiceItems.push(...items.map(item => ({ ...item, invoiceId: invId, id: `item-${Date.now()}-${Math.random()}` })));
-            alert('Invoice saved successfully to Firebase!');
+            alert('✅ Invoice saved successfully to Firebase!');
         }
         
         saveToStorage();
@@ -807,12 +797,12 @@ window.saveInvoice = async function() {
             }
             appData.invoiceItems = appData.invoiceItems.filter(item => item.invoiceId !== editId);
             appData.invoiceItems.push(...items.map(item => ({ ...item, invoiceId: editId, id: `item-${Date.now()}-${Math.random()}` })));
-            alert('Invoice updated locally (Firebase error)');
+            alert('✅ Invoice updated locally (Firebase error)');
         } else {
             const newInv = { id: `inv-${Date.now()}`, ...invoiceData };
             appData.invoices.push(newInv);
             appData.invoiceItems.push(...items.map(item => ({ ...item, invoiceId: newInv.id, id: `item-${Date.now()}-${Math.random()}` })));
-            alert('Invoice saved locally (Firebase error)');
+            alert('✅ Invoice saved locally (Firebase error)');
         }
         saveToStorage();
         cancelEdit();
@@ -821,6 +811,7 @@ window.saveInvoice = async function() {
     }
 }
 
+// ============ RESET INVOICE FORM ============
 function resetInvoiceForm() {
     document.getElementById('inv-number').value = '';
     document.getElementById('inv-date').value = new Date().toISOString().split('T')[0];
@@ -833,7 +824,6 @@ function resetInvoiceForm() {
     addItemRow();
     updateInvoiceTotals();
 }
-window.resetInvoiceForm = resetInvoiceForm;
 
 // ============ SUPPLIER MODAL ============
 window.openSupplierModal = function() { document.getElementById('supplierModal').classList.add('open'); }
@@ -929,7 +919,7 @@ window.comparePrices = function() {
         const mostExp = sorted[sorted.length-1];
         const avg = prices.reduce((s,p) => s + p.price, 0) / prices.length;
         const diff = mostExp.price - cheapest.price;
-        html += `<div class="mt-4 p-4 bg-green-50 rounded-xl"><span class="font-bold text-green-700">BEST PRICE: ${cheapest.sup} — £${cheapest.price.toFixed(2)}</span>`;
+        html += `<div class="mt-4 p-4 bg-green-50 rounded-xl"><span class="font-bold text-green-700">✅ BEST PRICE: ${cheapest.sup} — £${cheapest.price.toFixed(2)}</span>`;
         html += `<div class="text-sm text-gray-600 mt-1">Most expensive: ${mostExp.sup} — £${mostExp.price.toFixed(2)}<br>Average: £${avg.toFixed(2)} · Difference: £${diff.toFixed(2)} (${((diff/avg)*100).toFixed(1)}%)</div></div>`;
     }
     document.getElementById('compare-results').innerHTML = html;
@@ -969,7 +959,10 @@ function renderPurchases() {
     filtered.sort((a,b) => new Date(b.purchaseDate) - new Date(a.purchaseDate));
 
     const tbody = document.getElementById('purchase-table');
-    if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-400 py-8">No invoices found</td></tr>'; return; }
+    if (!filtered.length) { 
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-400 py-8">No invoices found</td></tr>'; 
+        return; 
+    }
     tbody.innerHTML = filtered.map(inv => {
         const items = appData.invoiceItems.filter(it => it.invoiceId === inv.id);
         return `<tr>
@@ -979,15 +972,25 @@ function renderPurchases() {
             <td>${items.length}</td>
             <td>£${inv.total.toFixed(2)}</td>
             <td>
-                <button class="text-blue-600 text-sm mr-2" onclick="editInvoice('${inv.id}')" title="Edit"><i class="fas fa-edit"></i></button>
-                <button class="text-green-600 text-sm mr-2" onclick="viewInvoice('${inv.id}')" title="View"><i class="fas fa-eye"></i></button>
-                <button class="text-red-600 text-sm" onclick="deleteInvoice('${inv.id}')" title="Delete"><i class="fas fa-trash"></i></button>
+                <div class="action-buttons">
+                    <button class="edit-btn" onclick="window.editInvoice('${inv.id}')" title="Edit Invoice">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="view-btn" onclick="window.viewInvoice('${inv.id}')" title="View Invoice">
+                        <i class="fas fa-eye"></i> View
+                    </button>
+                    <button class="delete-btn" onclick="window.deleteInvoice('${inv.id}')" title="Delete Invoice">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
             </td>
         </tr>`;
     }).join('');
 }
+
 window.renderPurchases = renderPurchases;
 
+// ============ VIEW INVOICE ============
 window.viewInvoice = function(id) {
     const inv = appData.invoices.find(i => i.id === id);
     if (!inv) return;
@@ -1011,14 +1014,14 @@ window.viewInvoice = function(id) {
     alert(msg);
 }
 
+// ============ DELETE INVOICE ============
 window.deleteInvoice = async function(id) {
     if (!confirm('Delete this invoice permanently?')) return;
     try {
         await deleteFromFirebase('invoices', id);
-        // Delete associated items
         const items = appData.invoiceItems.filter(item => item.invoiceId === id);
         for (const item of items) {
-            await deleteFromFirebase('invoiceItems', item.id);
+            if (item.id) await deleteFromFirebase('invoiceItems', item.id);
         }
         setSyncStatus('synced', `(${appData.invoices.length - 1} invoices)`);
     } catch (error) {
@@ -1106,6 +1109,20 @@ function formatDate(dateStr) {
     const d = new Date(dateStr);
     return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
+
+// ============ MAKE FUNCTIONS GLOBAL ============
+window.addItemRow = addItemRow;
+window.removeItemRow = removeItemRow;
+window.updateItemTotal = updateItemTotal;
+window.updateInvoiceTotals = updateInvoiceTotals;
+window.resetInvoiceForm = resetInvoiceForm;
+window.saveSupplier = saveSupplier;
+window.saveProduct = saveProduct;
+window.comparePrices = comparePrices;
+window.runAnalytics = runAnalytics;
+window.generateReport = generateReport;
+window.showPage = showPage;
+window.toggleSidebar = toggleSidebar;
 
 // ============ START ============
 document.addEventListener('DOMContentLoaded', () => {
