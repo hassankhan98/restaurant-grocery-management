@@ -8,17 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- Firebase v9 Modular SDK -->
-    <script type="importmap">
-    {
-        "imports": {
-            "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
-            "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js",
-            "firebase/analytics": "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js"
-        }
-    }
-    </script>
-    
     <style>
         * { box-sizing: border-box; }
         body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #f1f5f9; }
@@ -87,6 +76,10 @@
         .action-buttons .view-btn:hover { background: #bbf7d0; }
         .action-buttons .delete-btn { background: #fee2e2; color: #991b1b; }
         .action-buttons .delete-btn:hover { background: #fecaca; }
+        .toast { position: fixed; bottom: 20px; right: 20px; background: #1e293b; color: white; padding: 12px 24px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 9999; display: none; animation: slideUp 0.3s ease; }
+        .toast.success { background: #22c55e; }
+        .toast.error { background: #ef4444; }
+        @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body>
@@ -271,23 +264,12 @@
     <div class="flex gap-3 mt-4"><button onclick="window.saveProduct()" class="btn-primary">Save</button><button onclick="window.closeModal('productModal')" class="btn-outline">Cancel</button></div>
 </div></div>
 
-<script type="module">
-// ============ FIREBASE IMPORTS ============
-import { initializeApp } from "firebase/app";
-import { 
-    getFirestore, 
-    collection, 
-    addDoc, 
-    getDocs, 
-    updateDoc, 
-    deleteDoc, 
-    doc, 
-    query, 
-    orderBy
-} from "firebase/firestore";
-import { getAnalytics } from "firebase/analytics";
+<!-- Toast Notification -->
+<div id="toast" class="toast"></div>
 
-// ============ FIREBASE CONFIG ============
+<script>
+// ============ FIREBASE SETUP ============
+// Firebase config (using CDN version for simplicity)
 const firebaseConfig = {
     apiKey: "AIzaSyAwegncbGVk-qr_dGWuTXU_Wq0CnG_7elk",
     authDomain: "restaurant-grocery-management.firebaseapp.com",
@@ -298,12 +280,14 @@ const firebaseConfig = {
     measurementId: "G-NX1MC2EVWJ"
 };
 
-// ============ INIT FIREBASE ============
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const analytics = getAnalytics(app);
-
-console.log('🔥 Firebase initialized successfully!');
+// Initialize Firebase (using CDN)
+if (typeof firebase !== 'undefined') {
+    firebase.initializeApp(firebaseConfig);
+    window.db = firebase.firestore();
+    console.log('🔥 Firebase initialized!');
+} else {
+    console.warn('Firebase not loaded, using localStorage only');
+}
 
 // ============ DATA STORE ============
 let appData = {
@@ -316,6 +300,17 @@ let appData = {
 let charts = { daily: null, supplier: null };
 let currentFilter = 'all';
 let editingInvoiceId = null;
+
+// ============ TOAST ============
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = `toast ${type}`;
+    toast.style.display = 'block';
+    setTimeout(() => {
+        toast.style.display = 'none';
+    }, 3000);
+}
 
 // ============ SYNC STATUS ============
 function setSyncStatus(status, message = '') {
@@ -339,19 +334,29 @@ async function loadDataFromFirebase() {
     try {
         setSyncStatus('syncing');
         
-        const suppliersSnapshot = await getDocs(collection(db, 'suppliers'));
-        appData.suppliers = suppliersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        
-        const productsSnapshot = await getDocs(collection(db, 'products'));
-        appData.products = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        
-        const invoicesSnapshot = await getDocs(query(collection(db, 'invoices'), orderBy('purchaseDate', 'desc')));
-        appData.invoices = invoicesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        
-        const itemsSnapshot = await getDocs(collection(db, 'invoiceItems'));
-        appData.invoiceItems = itemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        
-        setSyncStatus('synced', `(${appData.invoices.length} invoices)`);
+        if (window.db) {
+            // Load Suppliers
+            const suppliersSnapshot = await window.db.collection('suppliers').get();
+            appData.suppliers = suppliersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            
+            // Load Products
+            const productsSnapshot = await window.db.collection('products').get();
+            appData.products = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            
+            // Load Invoices
+            const invoicesSnapshot = await window.db.collection('invoices').orderBy('purchaseDate', 'desc').get();
+            appData.invoices = invoicesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            
+            // Load Invoice Items
+            const itemsSnapshot = await window.db.collection('invoiceItems').get();
+            appData.invoiceItems = itemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            
+            setSyncStatus('synced', `(${appData.invoices.length} invoices)`);
+        } else {
+            loadFromStorage();
+            if (appData.suppliers.length === 0) loadDemoData();
+            setSyncStatus('error', 'Using local data');
+        }
         refreshAll();
         
     } catch (error) {
@@ -363,7 +368,7 @@ async function loadDataFromFirebase() {
     }
 }
 
-// ============ LOCAL STORAGE FALLBACK ============
+// ============ LOCAL STORAGE ============
 function saveToStorage() {
     try {
         localStorage.setItem('restaurantData', JSON.stringify(appData));
@@ -460,13 +465,16 @@ function loadDemoData() {
 async function saveToFirebase(collectionName, data, id = null) {
     try {
         setSyncStatus('syncing');
-        if (id) {
-            await updateDoc(doc(db, collectionName, id), data);
-            return id;
-        } else {
-            const docRef = await addDoc(collection(db, collectionName), data);
-            return docRef.id;
+        if (window.db) {
+            if (id) {
+                await window.db.collection(collectionName).doc(id).set(data, { merge: true });
+                return id;
+            } else {
+                const docRef = await window.db.collection(collectionName).add(data);
+                return docRef.id;
+            }
         }
+        return null;
     } catch (error) {
         console.error(`Error saving to ${collectionName}:`, error);
         setSyncStatus('error', 'Check console');
@@ -477,7 +485,9 @@ async function saveToFirebase(collectionName, data, id = null) {
 async function deleteFromFirebase(collectionName, id) {
     try {
         setSyncStatus('syncing');
-        await deleteDoc(doc(db, collectionName, id));
+        if (window.db) {
+            await window.db.collection(collectionName).doc(id).delete();
+        }
     } catch (error) {
         console.error(`Error deleting from ${collectionName}:`, error);
         setSyncStatus('error', 'Check console');
@@ -635,7 +645,6 @@ function updateInvoiceTotals() {
 
 // ============ EDIT INVOICE ============
 function editInvoice(id) {
-    console.log('Editing invoice:', id);
     const inv = appData.invoices.find(i => i.id === id);
     if (!inv) { 
         alert('Invoice not found'); 
@@ -758,7 +767,7 @@ async function saveInvoice() {
             }
             appData.invoiceItems = appData.invoiceItems.filter(item => item.invoiceId !== editId);
             appData.invoiceItems.push(...items.map(item => ({ ...item, invoiceId: editId, id: `item-${Date.now()}-${Math.random()}` })));
-            alert('✅ Invoice updated successfully!');
+            showToast('✅ Invoice updated successfully!', 'success');
         } else {
             const invId = await saveToFirebase('invoices', invoiceData);
             for (const item of items) {
@@ -767,7 +776,7 @@ async function saveInvoice() {
             const newInv = { id: invId, ...invoiceData };
             appData.invoices.push(newInv);
             appData.invoiceItems.push(...items.map(item => ({ ...item, invoiceId: invId, id: `item-${Date.now()}-${Math.random()}` })));
-            alert('✅ Invoice saved successfully to Firebase!');
+            showToast('✅ Invoice saved successfully!', 'success');
         }
         
         saveToStorage();
@@ -785,12 +794,12 @@ async function saveInvoice() {
             }
             appData.invoiceItems = appData.invoiceItems.filter(item => item.invoiceId !== editId);
             appData.invoiceItems.push(...items.map(item => ({ ...item, invoiceId: editId, id: `item-${Date.now()}-${Math.random()}` })));
-            alert('✅ Invoice updated locally (Firebase error)');
+            showToast('✅ Invoice updated locally', 'success');
         } else {
             const newInv = { id: `inv-${Date.now()}`, ...invoiceData };
             appData.invoices.push(newInv);
             appData.invoiceItems.push(...items.map(item => ({ ...item, invoiceId: newInv.id, id: `item-${Date.now()}-${Math.random()}` })));
-            alert('✅ Invoice saved locally (Firebase error)');
+            showToast('✅ Invoice saved locally', 'success');
         }
         saveToStorage();
         cancelEdit();
@@ -832,10 +841,11 @@ async function saveSupplier() {
         const id = await saveToFirebase('suppliers', data);
         appData.suppliers.push({ id, ...data });
         setSyncStatus('synced', `(${appData.suppliers.length} suppliers)`);
+        showToast('✅ Supplier added successfully!', 'success');
     } catch (error) {
         const id = `sup-${Date.now()}`;
         appData.suppliers.push({ id, ...data });
-        alert('Supplier saved locally (Firebase error)');
+        showToast('✅ Supplier saved locally', 'success');
     }
     saveToStorage();
     closeModal('supplierModal');
@@ -848,33 +858,59 @@ async function saveSupplier() {
     document.getElementById('sup-notes').value = '';
 }
 
-// ============ PRODUCT MODAL ============
-function openProductModal() { document.getElementById('productModal').classList.add('open'); }
+// ============ PRODUCT MODAL - FIXED! ============
+function openProductModal() { 
+    document.getElementById('productModal').classList.add('open'); 
+}
 
 async function saveProduct() {
+    console.log('🔵 saveProduct called!');
     const name = document.getElementById('prod-name').value.trim();
-    if (!name) { alert('Product name is required.'); return; }
+    if (!name) { 
+        alert('Product name is required.'); 
+        return; 
+    }
+    
     const data = { 
-        name, 
+        name: name,
         category: document.getElementById('prod-category').value, 
         unit: document.getElementById('prod-unit').value, 
         notes: document.getElementById('prod-notes').value 
     };
+    
+    console.log('📦 Product data:', data);
+    
     try {
-        const id = await saveToFirebase('products', data);
+        let id;
+        if (window.db) {
+            const docRef = await window.db.collection('products').add(data);
+            id = docRef.id;
+            console.log('✅ Product saved to Firebase with ID:', id);
+            setSyncStatus('synced', `(${appData.products.length + 1} products)`);
+        } else {
+            id = `prod-${Date.now()}`;
+            console.log('✅ Product saved locally with ID:', id);
+        }
         appData.products.push({ id, ...data });
-        setSyncStatus('synced', `(${appData.products.length} products)`);
+        saveToStorage();
+        closeModal('productModal');
+        refreshAll();
+        showToast('✅ Product added successfully!', 'success');
+        document.getElementById('prod-name').value = '';
+        document.getElementById('prod-unit').value = '';
+        document.getElementById('prod-notes').value = '';
     } catch (error) {
+        console.error('❌ Error saving product:', error);
         const id = `prod-${Date.now()}`;
         appData.products.push({ id, ...data });
-        alert('Product saved locally (Firebase error)');
+        saveToStorage();
+        closeModal('productModal');
+        refreshAll();
+        showToast('✅ Product saved locally', 'success');
+        document.getElementById('prod-name').value = '';
+        document.getElementById('prod-unit').value = '';
+        document.getElementById('prod-notes').value = '';
     }
-    saveToStorage();
-    closeModal('productModal');
-    refreshAll();
-    document.getElementById('prod-name').value = '';
-    document.getElementById('prod-unit').value = '';
-    document.getElementById('prod-notes').value = '';
 }
 
 // ============ PRICE COMPARISON ============
@@ -1018,6 +1054,7 @@ async function deleteInvoice(id) {
     saveToStorage();
     refreshAll();
     renderPurchases();
+    showToast('🗑️ Invoice deleted', 'success');
 }
 
 // ============ ANALYTICS ============
@@ -1062,6 +1099,7 @@ function generateReport(type) {
         appData.invoices.forEach(inv => { csv += `${inv.purchaseDate},${inv.invoiceNumber},${inv.supplierName || ''},${inv.total.toFixed(2)}\n`; });
         const blob = new Blob([csv], { type: 'text/csv' });
         const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'purchase-report.csv'; link.click();
+        showToast('📊 CSV downloaded!', 'success');
     } else {
         alert('PDF report would be generated here. For now, use Print or CSV export.');
     }
@@ -1096,8 +1134,7 @@ function formatDate(dateStr) {
     return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-// ============ EXPOSE ALL FUNCTIONS TO GLOBAL WINDOW ============
-window.appData = appData;
+// ============ EXPOSE ALL FUNCTIONS TO GLOBAL ============
 window.addItemRow = addItemRow;
 window.removeItemRow = removeItemRow;
 window.updateItemTotal = updateItemTotal;
@@ -1128,9 +1165,33 @@ console.log('✅ All functions exposed to window!');
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
     document.getElementById('inv-date').value = new Date().toISOString().split('T')[0];
-    loadDataFromFirebase();
+    
+    // Load Firebase SDK dynamically if not available
+    if (typeof firebase === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js';
+        script.onload = () => {
+            const firestoreScript = document.createElement('script');
+            firestoreScript.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js';
+            firestoreScript.onload = () => {
+                firebase.initializeApp(firebaseConfig);
+                window.db = firebase.firestore();
+                console.log('🔥 Firebase loaded dynamically!');
+                loadDataFromFirebase();
+            };
+            document.head.appendChild(firestoreScript);
+        };
+        document.head.appendChild(script);
+    } else {
+        loadDataFromFirebase();
+    }
+    
     addItemRow();
 });
 </script>
+
+<!-- Firebase CDN -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </body>
 </html>
