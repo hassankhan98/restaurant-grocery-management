@@ -99,17 +99,17 @@
                 <i class="fas fa-utensils text-2xl text-[#1e293b]"></i>
                 <span class="font-bold text-lg text-[#1e293b]">RestoCost</span>
             </div>
-            <button onclick="toggleSidebar()" class="md:hidden text-gray-500"><i class="fas fa-times"></i></button>
+            <button onclick="window.toggleSidebar()" class="md:hidden text-gray-500"><i class="fas fa-times"></i></button>
         </div>
         <nav class="flex-1 space-y-1">
-            <div class="nav-link active" onclick="showPage('dashboard')"><i class="fas fa-chart-pie"></i> Dashboard</div>
-            <div class="nav-link" onclick="showPage('purchases')"><i class="fas fa-receipt"></i> Purchases</div>
-            <div class="nav-link" onclick="showPage('add-invoice')"><i class="fas fa-plus-circle"></i> Add Invoice</div>
-            <div class="nav-link" onclick="showPage('suppliers')"><i class="fas fa-truck"></i> Suppliers</div>
-            <div class="nav-link" onclick="showPage('products')"><i class="fas fa-box"></i> Products</div>
-            <div class="nav-link" onclick="showPage('price-compare')"><i class="fas fa-balance-scale"></i> Price Comparison</div>
-            <div class="nav-link" onclick="showPage('analytics')"><i class="fas fa-chart-line"></i> Analytics</div>
-            <div class="nav-link" onclick="showPage('reports')"><i class="fas fa-file-alt"></i> Reports</div>
+            <div class="nav-link active" onclick="window.showPage('dashboard')"><i class="fas fa-chart-pie"></i> Dashboard</div>
+            <div class="nav-link" onclick="window.showPage('purchases')"><i class="fas fa-receipt"></i> Purchases</div>
+            <div class="nav-link" onclick="window.showPage('add-invoice')"><i class="fas fa-plus-circle"></i> Add Invoice</div>
+            <div class="nav-link" onclick="window.showPage('suppliers')"><i class="fas fa-truck"></i> Suppliers</div>
+            <div class="nav-link" onclick="window.showPage('products')"><i class="fas fa-box"></i> Products</div>
+            <div class="nav-link" onclick="window.showPage('price-compare')"><i class="fas fa-balance-scale"></i> Price Comparison</div>
+            <div class="nav-link" onclick="window.showPage('analytics')"><i class="fas fa-chart-line"></i> Analytics</div>
+            <div class="nav-link" onclick="window.showPage('reports')"><i class="fas fa-file-alt"></i> Reports</div>
         </nav>
         <div class="text-xs text-gray-400 mt-4 border-t pt-4">
             <div class="flex items-center justify-between">
@@ -124,12 +124,12 @@
         <!-- Top bar -->
         <div class="flex items-center justify-between mb-6">
             <div class="flex items-center gap-4">
-                <button onclick="toggleSidebar()" class="md:hidden text-gray-600 text-xl"><i class="fas fa-bars"></i></button>
+                <button onclick="window.toggleSidebar()" class="md:hidden text-gray-600 text-xl"><i class="fas fa-bars"></i></button>
                 <h1 id="page-title" class="text-2xl font-bold text-[#1e293b]">Dashboard</h1>
             </div>
             <div class="flex items-center gap-3">
                 <span class="text-sm text-gray-500 hidden sm:inline">Today: <span id="today-date"></span></span>
-                <button onclick="showPage('add-invoice')" class="btn-primary text-sm"><i class="fas fa-plus mr-1"></i> Add Invoice</button>
+                <button onclick="window.showPage('add-invoice')" class="btn-primary text-sm"><i class="fas fa-plus mr-1"></i> Add Invoice</button>
             </div>
         </div>
 
@@ -162,14 +162,14 @@
         <div id="page-purchases" class="page-content">
             <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
                 <div class="flex flex-wrap gap-2">
-                    <button class="tab active" onclick="filterPurchases('all', this)">All</button>
-                    <button class="tab" onclick="filterPurchases('today', this)">Today</button>
-                    <button class="tab" onclick="filterPurchases('week', this)">This Week</button>
-                    <button class="tab" onclick="filterPurchases('month', this)">This Month</button>
+                    <button class="tab active" onclick="window.filterPurchases('all', this)">All</button>
+                    <button class="tab" onclick="window.filterPurchases('today', this)">Today</button>
+                    <button class="tab" onclick="window.filterPurchases('week', this)">This Week</button>
+                    <button class="tab" onclick="window.filterPurchases('month', this)">This Month</button>
                 </div>
                 <div class="flex gap-2 flex-wrap">
-                    <input id="purchase-search" placeholder="Search..." class="input-field w-48 text-sm" oninput="renderPurchases()" />
-                    <select id="purchase-supplier-filter" class="input-field w-32 text-sm" onchange="renderPurchases()"><option value="">All Suppliers</option></select>
+                    <input id="purchase-search" placeholder="Search..." class="input-field w-48 text-sm" oninput="window.renderPurchases()" />
+                    <select id="purchase-supplier-filter" class="input-field w-32 text-sm" onchange="window.renderPurchases()"><option value="">All Suppliers</option></select>
                 </div>
             </div>
             <div class="card p-0 overflow-hidden">
@@ -190,7 +190,7 @@
                     <div><label class="block text-sm font-medium mb-1">Purchase Date</label><input id="inv-date" class="input-field" type="date" /></div>
                     <div><label class="block text-sm font-medium mb-1">Supplier</label>
                         <select id="inv-supplier" class="input-field"><option value="">Select supplier</option></select>
-                        <button onclick="openSupplierModal()" class="text-sm text-blue-600 mt-1"><i class="fas fa-plus"></i> Add new supplier</button>
+                        <button onclick="window.openSupplierModal()" class="text-sm text-blue-600 mt-1"><i class="fas fa-plus"></i> Add new supplier</button>
                     </div>
                     <div><label class="block text-sm font-medium mb-1">Supplier Invoice Ref</label><input id="inv-ref" class="input-field" placeholder="Optional ref" /></div>
                 </div>
@@ -198,39 +198,39 @@
                 
                 <h4 class="font-semibold mt-4 mb-2">Invoice Items</h4>
                 <div id="invoice-items-container" class="space-y-2"></div>
-                <button onclick="addItemRow()" class="btn-outline text-sm mt-2"><i class="fas fa-plus"></i> Add Item</button>
+                <button onclick="window.addItemRow()" class="btn-outline text-sm mt-2"><i class="fas fa-plus"></i> Add Item</button>
                 
                 <div class="mt-4 p-4 bg-gray-50 rounded-xl">
                     <div class="flex justify-between"><span>Subtotal:</span><span id="inv-subtotal">£0.00</span></div>
-                    <div class="flex justify-between"><span>Discount:</span><span><input id="inv-discount" class="input-field w-24 inline" type="number" step="0.01" placeholder="0" oninput="updateInvoiceTotals()" /> £</span></div>
-                    <div class="flex justify-between"><span>Tax:</span><span><input id="inv-tax" class="input-field w-24 inline" type="number" step="0.01" placeholder="0" oninput="updateInvoiceTotals()" /> £</span></div>
+                    <div class="flex justify-between"><span>Discount:</span><span><input id="inv-discount" class="input-field w-24 inline" type="number" step="0.01" placeholder="0" oninput="window.updateInvoiceTotals()" /> £</span></div>
+                    <div class="flex justify-between"><span>Tax:</span><span><input id="inv-tax" class="input-field w-24 inline" type="number" step="0.01" placeholder="0" oninput="window.updateInvoiceTotals()" /> £</span></div>
                     <div class="flex justify-between font-bold text-lg"><span>Grand Total:</span><span id="inv-grand-total">£0.00</span></div>
                 </div>
                 
                 <div class="flex flex-wrap gap-3 mt-4">
-                    <button onclick="saveInvoice()" class="btn-primary"><i class="fas fa-save"></i> <span id="save-btn-text">Save Invoice</span></button>
-                    <button onclick="cancelEdit()" id="cancel-edit-btn" class="btn-outline hidden"><i class="fas fa-times"></i> Cancel Edit</button>
-                    <button onclick="resetInvoiceForm()" class="btn-outline"><i class="fas fa-undo"></i> Reset</button>
+                    <button onclick="window.saveInvoice()" class="btn-primary"><i class="fas fa-save"></i> <span id="save-btn-text">Save Invoice</span></button>
+                    <button onclick="window.cancelEdit()" id="cancel-edit-btn" class="btn-outline hidden"><i class="fas fa-times"></i> Cancel Edit</button>
+                    <button onclick="window.resetInvoiceForm()" class="btn-outline"><i class="fas fa-undo"></i> Reset</button>
                 </div>
             </div>
         </div>
 
         <!-- Suppliers -->
         <div id="page-suppliers" class="page-content">
-            <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold">Suppliers</h2><button onclick="openSupplierModal()" class="btn-primary text-sm"><i class="fas fa-plus"></i> Add Supplier</button></div>
+            <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold">Suppliers</h2><button onclick="window.openSupplierModal()" class="btn-primary text-sm"><i class="fas fa-plus"></i> Add Supplier</button></div>
             <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4" id="supplier-grid"></div>
         </div>
 
         <!-- Products -->
         <div id="page-products" class="page-content">
-            <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold">Products</h2><button onclick="openProductModal()" class="btn-primary text-sm"><i class="fas fa-plus"></i> Add Product</button></div>
+            <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold">Products</h2><button onclick="window.openProductModal()" class="btn-primary text-sm"><i class="fas fa-plus"></i> Add Product</button></div>
             <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3" id="product-grid"></div>
         </div>
 
         <!-- Price Comparison -->
         <div id="page-price-compare" class="page-content">
             <h2 class="text-xl font-bold mb-4">Price Comparison</h2>
-            <div class="mb-4"><select id="compare-product-select" class="input-field w-64" onchange="comparePrices()"><option value="">Select a product</option></select></div>
+            <div class="mb-4"><select id="compare-product-select" class="input-field w-64" onchange="window.comparePrices()"><option value="">Select a product</option></select></div>
             <div id="compare-results" class="card p-4"></div>
         </div>
 
@@ -238,11 +238,11 @@
         <div id="page-analytics" class="page-content">
             <h2 class="text-xl font-bold mb-4">Analytics</h2>
             <div class="flex flex-wrap gap-2 mb-4">
-                <button class="tab active" onclick="runAnalytics('today', this)">Today</button>
-                <button class="tab" onclick="runAnalytics('week', this)">This Week</button>
-                <button class="tab" onclick="runAnalytics('month', this)">This Month</button>
-                <button class="tab" onclick="runAnalytics('quarter', this)">Last 3 Months</button>
-                <button class="tab" onclick="runAnalytics('year', this)">This Year</button>
+                <button class="tab active" onclick="window.runAnalytics('today', this)">Today</button>
+                <button class="tab" onclick="window.runAnalytics('week', this)">This Week</button>
+                <button class="tab" onclick="window.runAnalytics('month', this)">This Month</button>
+                <button class="tab" onclick="window.runAnalytics('quarter', this)">Last 3 Months</button>
+                <button class="tab" onclick="window.runAnalytics('year', this)">This Year</button>
             </div>
             <div id="analytics-content" class="grid md:grid-cols-2 gap-4"></div>
         </div>
@@ -251,8 +251,8 @@
         <div id="page-reports" class="page-content">
             <h2 class="text-xl font-bold mb-4">Reports</h2>
             <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div class="card p-4 text-center"><i class="fas fa-file-pdf text-3xl text-red-500 mb-2 block"></i><button onclick="generateReport('pdf')" class="btn-primary text-sm">Download PDF</button></div>
-                <div class="card p-4 text-center"><i class="fas fa-file-excel text-3xl text-green-600 mb-2 block"></i><button onclick="generateReport('csv')" class="btn-primary text-sm">Export CSV</button></div>
+                <div class="card p-4 text-center"><i class="fas fa-file-pdf text-3xl text-red-500 mb-2 block"></i><button onclick="window.generateReport('pdf')" class="btn-primary text-sm">Download PDF</button></div>
+                <div class="card p-4 text-center"><i class="fas fa-file-excel text-3xl text-green-600 mb-2 block"></i><button onclick="window.generateReport('csv')" class="btn-primary text-sm">Export CSV</button></div>
                 <div class="card p-4 text-center"><i class="fas fa-print text-3xl text-gray-600 mb-2 block"></i><button onclick="window.print()" class="btn-primary text-sm">Print</button></div>
             </div>
         </div>
@@ -262,13 +262,13 @@
 <!-- Supplier Modal -->
 <div id="supplierModal" class="modal-overlay"><div class="modal-box"><h3 class="text-xl font-bold mb-4">Add Supplier</h3>
     <div class="space-y-3"><input id="sup-name" class="input-field" placeholder="Supplier Name *" /><input id="sup-contact" class="input-field" placeholder="Contact Person" /><input id="sup-phone" class="input-field" placeholder="Phone" /><input id="sup-email" class="input-field" placeholder="Email" /><input id="sup-address" class="input-field" placeholder="Address" /><input id="sup-notes" class="input-field" placeholder="Notes" /></div>
-    <div class="flex gap-3 mt-4"><button onclick="saveSupplier()" class="btn-primary">Save</button><button onclick="closeModal('supplierModal')" class="btn-outline">Cancel</button></div>
+    <div class="flex gap-3 mt-4"><button onclick="window.saveSupplier()" class="btn-primary">Save</button><button onclick="window.closeModal('supplierModal')" class="btn-outline">Cancel</button></div>
 </div></div>
 
 <!-- Product Modal -->
 <div id="productModal" class="modal-overlay"><div class="modal-box"><h3 class="text-xl font-bold mb-4">Add Product</h3>
     <div class="space-y-3"><input id="prod-name" class="input-field" placeholder="Product Name *" /><select id="prod-category" class="input-field"><option value="Vegetables">Vegetables</option><option value="Fruits">Fruits</option><option value="Meat">Meat</option><option value="Dairy">Dairy</option><option value="Dry Goods">Dry Goods</option><option value="Frozen">Frozen</option><option value="Drinks">Drinks</option><option value="Cleaning">Cleaning</option><option value="Other">Other</option></select><input id="prod-unit" class="input-field" placeholder="Unit (e.g. Box, kg)" /><input id="prod-notes" class="input-field" placeholder="Notes" /></div>
-    <div class="flex gap-3 mt-4"><button onclick="saveProduct()" class="btn-primary">Save</button><button onclick="closeModal('productModal')" class="btn-outline">Cancel</button></div>
+    <div class="flex gap-3 mt-4"><button onclick="window.saveProduct()" class="btn-primary">Save</button><button onclick="window.closeModal('productModal')" class="btn-outline">Cancel</button></div>
 </div></div>
 
 <script type="module">
@@ -283,8 +283,7 @@ import {
     deleteDoc, 
     doc, 
     query, 
-    orderBy,
-    getDoc
+    orderBy
 } from "firebase/firestore";
 import { getAnalytics } from "firebase/analytics";
 
@@ -591,12 +590,14 @@ function addItemRow(productId = '', qty = 1, unit = 'Box', price = '') {
     row.className = 'invoice-item-row';
     const prodOpts = appData.products.map(p => `<option value="${p.id}" ${p.id === productId ? 'selected' : ''}>${p.name}</option>`).join('');
     row.innerHTML = `
-        <select class="item-product" onchange="updateItemTotal(this.closest('.invoice-item-row'))"><option value="">Product</option>${prodOpts}</select>
-        <input class="item-qty" type="number" placeholder="Qty" value="${qty}" oninput="updateItemTotal(this.closest('.invoice-item-row'))" />
-        <input class="item-unit" placeholder="Unit" value="${unit}" oninput="updateItemTotal(this.closest('.invoice-item-row'))" />
-        <input class="item-price" type="number" placeholder="Unit Price" step="0.01" value="${price}" oninput="updateItemTotal(this.closest('.invoice-item-row'))" />
+        <select class="item-product" onchange="window.updateItemTotal(this.closest('.invoice-item-row'))">
+            <option value="">Product</option>${prodOpts}
+        </select>
+        <input class="item-qty" type="number" placeholder="Qty" value="${qty}" oninput="window.updateItemTotal(this.closest('.invoice-item-row'))" />
+        <input class="item-unit" placeholder="Unit" value="${unit}" oninput="window.updateItemTotal(this.closest('.invoice-item-row'))" />
+        <input class="item-price" type="number" placeholder="Unit Price" step="0.01" value="${price}" oninput="window.updateItemTotal(this.closest('.invoice-item-row'))" />
         <input class="item-total" type="text" placeholder="Total" readonly />
-        <button onclick="removeItemRow(this)" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
+        <button onclick="window.removeItemRow(this)" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
     `;
     container.appendChild(row);
     updateItemTotal(row);
@@ -632,8 +633,8 @@ function updateInvoiceTotals() {
     document.getElementById('inv-grand-total').textContent = `£${grand.toFixed(2)}`;
 }
 
-// ============ EDIT INVOICE - NOW WORKS! ============
-window.editInvoice = function(id) {
+// ============ EDIT INVOICE ============
+function editInvoice(id) {
     console.log('Editing invoice:', id);
     const inv = appData.invoices.find(i => i.id === id);
     if (!inv) { 
@@ -648,7 +649,6 @@ window.editInvoice = function(id) {
     document.getElementById('save-btn-text').textContent = 'Update Invoice';
     document.getElementById('cancel-edit-btn').classList.remove('hidden');
     
-    // Fill form with invoice data
     document.getElementById('inv-number').value = inv.invoiceNumber;
     document.getElementById('inv-date').value = inv.purchaseDate;
     document.getElementById('inv-supplier').value = inv.supplierId;
@@ -657,10 +657,8 @@ window.editInvoice = function(id) {
     document.getElementById('inv-discount').value = inv.discount || 0;
     document.getElementById('inv-tax').value = inv.tax || 0;
     
-    // Clear existing items
     document.getElementById('invoice-items-container').innerHTML = '';
     
-    // Add items from invoice
     const items = appData.invoiceItems.filter(item => item.invoiceId === id);
     if (items.length === 0) {
         addItemRow();
@@ -671,18 +669,14 @@ window.editInvoice = function(id) {
     }
     
     updateInvoiceTotals();
-    
-    // Show the page
     showPage('add-invoice');
-    
-    // Scroll to form
     setTimeout(() => {
         document.querySelector('#page-add-invoice .card').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
 }
 
 // ============ CANCEL EDIT ============
-window.cancelEdit = function() {
+function cancelEdit() {
     resetInvoiceForm();
     editingInvoiceId = null;
     document.getElementById('edit-invoice-id').value = '';
@@ -693,7 +687,7 @@ window.cancelEdit = function() {
 }
 
 // ============ SAVE INVOICE ============
-window.saveInvoice = async function() {
+async function saveInvoice() {
     const supplierId = document.getElementById('inv-supplier').value;
     const date = document.getElementById('inv-date').value;
     const invNum = document.getElementById('inv-number').value || `INV-${String(appData.invoices.length+1).padStart(3,'0')}`;
@@ -750,18 +744,14 @@ window.saveInvoice = async function() {
     
     try {
         if (editId) {
-            // UPDATE existing invoice
             await saveToFirebase('invoices', invoiceData, editId);
-            // Delete old items
             const oldItems = appData.invoiceItems.filter(item => item.invoiceId === editId);
             for (const item of oldItems) {
                 if (item.id) await deleteFromFirebase('invoiceItems', item.id);
             }
-            // Add new items
             for (const item of items) {
                 await saveToFirebase('invoiceItems', { ...item, invoiceId: editId });
             }
-            // Update local data
             const index = appData.invoices.findIndex(i => i.id === editId);
             if (index !== -1) {
                 appData.invoices[index] = { id: editId, ...invoiceData };
@@ -770,7 +760,6 @@ window.saveInvoice = async function() {
             appData.invoiceItems.push(...items.map(item => ({ ...item, invoiceId: editId, id: `item-${Date.now()}-${Math.random()}` })));
             alert('✅ Invoice updated successfully!');
         } else {
-            // CREATE new invoice
             const invId = await saveToFirebase('invoices', invoiceData);
             for (const item of items) {
                 await saveToFirebase('invoiceItems', { ...item, invoiceId: invId });
@@ -788,7 +777,6 @@ window.saveInvoice = async function() {
         setSyncStatus('synced', `(${appData.invoices.length} invoices)`);
         
     } catch (error) {
-        // Fallback to localStorage only
         console.error('Firebase save failed, using localStorage:', error);
         if (editId) {
             const index = appData.invoices.findIndex(i => i.id === editId);
@@ -826,10 +814,10 @@ function resetInvoiceForm() {
 }
 
 // ============ SUPPLIER MODAL ============
-window.openSupplierModal = function() { document.getElementById('supplierModal').classList.add('open'); }
-window.closeModal = function(id) { document.getElementById(id).classList.remove('open'); }
+function openSupplierModal() { document.getElementById('supplierModal').classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
-window.saveSupplier = async function() {
+async function saveSupplier() {
     const name = document.getElementById('sup-name').value.trim();
     if (!name) { alert('Supplier name is required.'); return; }
     const data = { 
@@ -861,9 +849,9 @@ window.saveSupplier = async function() {
 }
 
 // ============ PRODUCT MODAL ============
-window.openProductModal = function() { document.getElementById('productModal').classList.add('open'); }
+function openProductModal() { document.getElementById('productModal').classList.add('open'); }
 
-window.saveProduct = async function() {
+async function saveProduct() {
     const name = document.getElementById('prod-name').value.trim();
     if (!name) { alert('Product name is required.'); return; }
     const data = { 
@@ -890,7 +878,7 @@ window.saveProduct = async function() {
 }
 
 // ============ PRICE COMPARISON ============
-window.comparePrices = function() {
+function comparePrices() {
     const productId = document.getElementById('compare-product-select').value;
     if (!productId) { document.getElementById('compare-results').innerHTML = '<div class="empty-state"><i class="fas fa-balance-scale"></i><p>Select a product to compare prices</p></div>'; return; }
     const items = appData.invoiceItems.filter(it => it.productId === productId);
@@ -926,7 +914,7 @@ window.comparePrices = function() {
 }
 
 // ============ PURCHASES ============
-window.filterPurchases = function(filter, btn) {
+function filterPurchases(filter, btn) {
     currentFilter = filter;
     document.querySelectorAll('#page-purchases .tab').forEach(t => t.classList.remove('active'));
     if (btn) btn.classList.add('active');
@@ -988,10 +976,8 @@ function renderPurchases() {
     }).join('');
 }
 
-window.renderPurchases = renderPurchases;
-
 // ============ VIEW INVOICE ============
-window.viewInvoice = function(id) {
+function viewInvoice(id) {
     const inv = appData.invoices.find(i => i.id === id);
     if (!inv) return;
     const items = appData.invoiceItems.filter(it => it.invoiceId === id);
@@ -1015,7 +1001,7 @@ window.viewInvoice = function(id) {
 }
 
 // ============ DELETE INVOICE ============
-window.deleteInvoice = async function(id) {
+async function deleteInvoice(id) {
     if (!confirm('Delete this invoice permanently?')) return;
     try {
         await deleteFromFirebase('invoices', id);
@@ -1035,7 +1021,7 @@ window.deleteInvoice = async function(id) {
 }
 
 // ============ ANALYTICS ============
-window.runAnalytics = function(period, btn) {
+function runAnalytics(period, btn) {
     if (btn) {
         document.querySelectorAll('#page-analytics .tab').forEach(t => t.classList.remove('active'));
         btn.classList.add('active');
@@ -1070,7 +1056,7 @@ window.runAnalytics = function(period, btn) {
 }
 
 // ============ REPORTS ============
-window.generateReport = function(type) {
+function generateReport(type) {
     if (type === 'csv') {
         let csv = 'Date,Invoice,Supplier,Total\n';
         appData.invoices.forEach(inv => { csv += `${inv.purchaseDate},${inv.invoiceNumber},${inv.supplierName || ''},${inv.total.toFixed(2)}\n`; });
@@ -1082,7 +1068,7 @@ window.generateReport = function(type) {
 }
 
 // ============ NAVIGATION ============
-window.showPage = function(page) {
+function showPage(page) {
     document.querySelectorAll('.page-content').forEach(el => el.classList.remove('active'));
     document.getElementById(`page-${page}`).classList.add('active');
     document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
@@ -1097,7 +1083,7 @@ window.showPage = function(page) {
     toggleSidebar(false);
 }
 
-window.toggleSidebar = function(force) {
+function toggleSidebar(force) {
     const sidebar = document.getElementById('sidebar');
     if (force === false) sidebar.classList.remove('open');
     else sidebar.classList.toggle('open');
@@ -1110,19 +1096,33 @@ function formatDate(dateStr) {
     return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-// ============ MAKE FUNCTIONS GLOBAL ============
+// ============ EXPOSE ALL FUNCTIONS TO GLOBAL WINDOW ============
+window.appData = appData;
 window.addItemRow = addItemRow;
 window.removeItemRow = removeItemRow;
 window.updateItemTotal = updateItemTotal;
 window.updateInvoiceTotals = updateInvoiceTotals;
 window.resetInvoiceForm = resetInvoiceForm;
+window.saveInvoice = saveInvoice;
+window.editInvoice = editInvoice;
+window.cancelEdit = cancelEdit;
 window.saveSupplier = saveSupplier;
 window.saveProduct = saveProduct;
+window.openSupplierModal = openSupplierModal;
+window.openProductModal = openProductModal;
+window.closeModal = closeModal;
 window.comparePrices = comparePrices;
+window.filterPurchases = filterPurchases;
+window.renderPurchases = renderPurchases;
+window.viewInvoice = viewInvoice;
+window.deleteInvoice = deleteInvoice;
 window.runAnalytics = runAnalytics;
 window.generateReport = generateReport;
 window.showPage = showPage;
 window.toggleSidebar = toggleSidebar;
+window.refreshAll = refreshAll;
+
+console.log('✅ All functions exposed to window!');
 
 // ============ START ============
 document.addEventListener('DOMContentLoaded', () => {
