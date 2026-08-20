@@ -80,6 +80,12 @@
         .toast.success { background: #22c55e; }
         .toast.error { background: #ef4444; }
         @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .product-card { position: relative; }
+        .product-card .delete-product-btn { position: absolute; top: 8px; right: 8px; background: #fee2e2; color: #991b1b; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+        .product-card .delete-product-btn:hover { background: #fecaca; transform: scale(1.1); }
+        .supplier-card { position: relative; }
+        .supplier-card .delete-supplier-btn { position: absolute; top: 8px; right: 8px; background: #fee2e2; color: #991b1b; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+        .supplier-card .delete-supplier-btn:hover { background: #fecaca; transform: scale(1.1); }
     </style>
 </head>
 <body>
@@ -217,7 +223,7 @@
         <!-- Products -->
         <div id="page-products" class="page-content">
             <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold">Products</h2><button onclick="window.openProductModal()" class="btn-primary text-sm"><i class="fas fa-plus"></i> Add Product</button></div>
-            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3" id="product-grid"></div>
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4" id="product-grid"></div>
         </div>
 
         <!-- Price Comparison -->
@@ -269,7 +275,6 @@
 
 <script>
 // ============ FIREBASE SETUP ============
-// Firebase config (using CDN version for simplicity)
 const firebaseConfig = {
     apiKey: "AIzaSyAwegncbGVk-qr_dGWuTXU_Wq0CnG_7elk",
     authDomain: "restaurant-grocery-management.firebaseapp.com",
@@ -280,13 +285,11 @@ const firebaseConfig = {
     measurementId: "G-NX1MC2EVWJ"
 };
 
-// Initialize Firebase (using CDN)
-if (typeof firebase !== 'undefined') {
+// Initialize Firebase
+if (typeof firebase !== 'undefined' && firebase.apps.length === 0) {
     firebase.initializeApp(firebaseConfig);
     window.db = firebase.firestore();
     console.log('🔥 Firebase initialized!');
-} else {
-    console.warn('Firebase not loaded, using localStorage only');
 }
 
 // ============ DATA STORE ============
@@ -329,25 +332,21 @@ function setSyncStatus(status, message = '') {
     el.innerHTML = `${icons[status] || ''} ${labels[status] || ''} ${message}`;
 }
 
-// ============ LOAD DATA FROM FIREBASE ============
+// ============ LOAD DATA ============
 async function loadDataFromFirebase() {
     try {
         setSyncStatus('syncing');
         
         if (window.db) {
-            // Load Suppliers
             const suppliersSnapshot = await window.db.collection('suppliers').get();
             appData.suppliers = suppliersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             
-            // Load Products
             const productsSnapshot = await window.db.collection('products').get();
             appData.products = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             
-            // Load Invoices
             const invoicesSnapshot = await window.db.collection('invoices').orderBy('purchaseDate', 'desc').get();
             appData.invoices = invoicesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             
-            // Load Invoice Items
             const itemsSnapshot = await window.db.collection('invoiceItems').get();
             appData.invoiceItems = itemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             
@@ -360,7 +359,7 @@ async function loadDataFromFirebase() {
         refreshAll();
         
     } catch (error) {
-        console.error('Error loading from Firebase:', error);
+        console.error('Error loading:', error);
         setSyncStatus('error', 'Using local data');
         loadFromStorage();
         if (appData.suppliers.length === 0) loadDemoData();
@@ -476,7 +475,7 @@ async function saveToFirebase(collectionName, data, id = null) {
         }
         return null;
     } catch (error) {
-        console.error(`Error saving to ${collectionName}:`, error);
+        console.error(`Error saving:`, error);
         setSyncStatus('error', 'Check console');
         throw error;
     }
@@ -489,7 +488,7 @@ async function deleteFromFirebase(collectionName, id) {
             await window.db.collection(collectionName).doc(id).delete();
         }
     } catch (error) {
-        console.error(`Error deleting from ${collectionName}:`, error);
+        console.error(`Error deleting:`, error);
         setSyncStatus('error', 'Check console');
         throw error;
     }
@@ -502,8 +501,10 @@ function refreshAll() {
     renderProducts();
     populateSelects();
     renderPurchases();
-    document.getElementById('compare-product-select').value = '';
-    document.getElementById('compare-results').innerHTML = '<div class="empty-state"><i class="fas fa-balance-scale"></i><p>Select a product to compare prices</p></div>';
+    if (document.getElementById('compare-product-select')) {
+        document.getElementById('compare-product-select').value = '';
+        document.getElementById('compare-results').innerHTML = '<div class="empty-state"><i class="fas fa-balance-scale"></i><p>Select a product to compare prices</p></div>';
+    }
 }
 
 // ============ RENDER DASHBOARD ============
@@ -563,22 +564,85 @@ function updateCharts() {
 // ============ RENDER SUPPLIERS ============
 function renderSuppliers() {
     const grid = document.getElementById('supplier-grid');
-    if (!appData.suppliers.length) { grid.innerHTML = '<div class="empty-state col-span-full"><i class="fas fa-truck"></i><p>No suppliers yet</p></div>'; return; }
+    if (!appData.suppliers.length) { 
+        grid.innerHTML = '<div class="empty-state col-span-full"><i class="fas fa-truck"></i><p>No suppliers yet</p></div>'; 
+        return; 
+    }
     grid.innerHTML = appData.suppliers.map(s => {
         const spent = appData.invoices.filter(inv => inv.supplierId === s.id).reduce((sum, inv) => sum + inv.total, 0);
-        return `<div class="card p-4"><div class="font-bold">${s.name}</div><div class="text-sm text-gray-500">${s.contactPerson || ''}</div><div class="text-sm text-gray-500">${s.phone || ''}</div><div class="mt-2 text-sm">Spent: <span class="font-semibold">£${spent.toFixed(2)}</span></div></div>`;
+        return `<div class="card p-4 supplier-card">
+            <button onclick="window.deleteSupplier('${s.id}')" class="delete-supplier-btn" title="Delete Supplier"><i class="fas fa-trash"></i></button>
+            <div class="font-bold">${s.name}</div>
+            <div class="text-sm text-gray-500">${s.contactPerson || ''}</div>
+            <div class="text-sm text-gray-500">${s.phone || ''}</div>
+            <div class="mt-2 text-sm">Spent: <span class="font-semibold">£${spent.toFixed(2)}</span></div>
+        </div>`;
     }).join('');
+}
+
+// ============ DELETE SUPPLIER ============
+async function deleteSupplier(id) {
+    if (!confirm('Delete this supplier? This will also delete all associated invoices.')) return;
+    try {
+        await deleteFromFirebase('suppliers', id);
+        const invs = appData.invoices.filter(inv => inv.supplierId === id);
+        for (const inv of invs) {
+            await deleteFromFirebase('invoices', inv.id);
+            const items = appData.invoiceItems.filter(item => item.invoiceId === inv.id);
+            for (const item of items) {
+                if (item.id) await deleteFromFirebase('invoiceItems', item.id);
+            }
+        }
+    } catch (error) {
+        console.error('Delete failed:', error);
+    }
+    appData.suppliers = appData.suppliers.filter(s => s.id !== id);
+    appData.invoices = appData.invoices.filter(inv => inv.supplierId !== id);
+    appData.invoiceItems = appData.invoiceItems.filter(item => {
+        const inv = appData.invoices.find(i => i.id === item.invoiceId);
+        return inv !== undefined;
+    });
+    saveToStorage();
+    refreshAll();
+    showToast('🗑️ Supplier deleted', 'success');
 }
 
 // ============ RENDER PRODUCTS ============
 function renderProducts() {
     const grid = document.getElementById('product-grid');
-    if (!appData.products.length) { grid.innerHTML = '<div class="empty-state col-span-full"><i class="fas fa-box"></i><p>No products yet</p></div>'; return; }
+    if (!appData.products.length) { 
+        grid.innerHTML = '<div class="empty-state col-span-full"><i class="fas fa-box"></i><p>No products yet</p></div>'; 
+        return; 
+    }
     grid.innerHTML = appData.products.map(p => {
         const items = appData.invoiceItems.filter(it => it.productId === p.id);
         const lastPrice = items.length ? items.sort((a,b) => new Date(b.purchaseDate) - new Date(a.purchaseDate))[0] : null;
-        return `<div class="card p-3"><div class="font-medium">${p.name}</div><div class="text-sm text-gray-500">${p.category || ''} · ${p.unit || ''}</div>${lastPrice ? `<div class="text-sm mt-1">Last: £${lastPrice.unitPrice.toFixed(2)}</div>` : '<div class="text-sm mt-1 text-gray-400">No purchases</div>'}</div>`;
+        return `<div class="card p-3 product-card">
+            <button onclick="window.deleteProduct('${p.id}')" class="delete-product-btn" title="Delete Product"><i class="fas fa-trash"></i></button>
+            <div class="font-medium">${p.name}</div>
+            <div class="text-sm text-gray-500">${p.category || ''} · ${p.unit || ''}</div>
+            ${lastPrice ? `<div class="text-sm mt-1">Last: £${lastPrice.unitPrice.toFixed(2)}</div>` : '<div class="text-sm mt-1 text-gray-400">No purchases</div>'}
+        </div>`;
     }).join('');
+}
+
+// ============ DELETE PRODUCT ============
+async function deleteProduct(id) {
+    if (!confirm('Delete this product? This will also delete all associated invoice items.')) return;
+    try {
+        await deleteFromFirebase('products', id);
+        const items = appData.invoiceItems.filter(item => item.productId === id);
+        for (const item of items) {
+            if (item.id) await deleteFromFirebase('invoiceItems', item.id);
+        }
+    } catch (error) {
+        console.error('Delete failed:', error);
+    }
+    appData.products = appData.products.filter(p => p.id !== id);
+    appData.invoiceItems = appData.invoiceItems.filter(item => item.productId !== id);
+    saveToStorage();
+    refreshAll();
+    showToast('🗑️ Product deleted', 'success');
 }
 
 // ============ POPULATE SELECTS ============
@@ -587,10 +651,10 @@ function populateSelects() {
     const filterSelect = document.getElementById('purchase-supplier-filter');
     const compareSelect = document.getElementById('compare-product-select');
     const options = appData.suppliers.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
-    supSelect.innerHTML = `<option value="">Select supplier</option>${options}`;
-    filterSelect.innerHTML = `<option value="">All Suppliers</option>${options}`;
+    if (supSelect) supSelect.innerHTML = `<option value="">Select supplier</option>${options}`;
+    if (filterSelect) filterSelect.innerHTML = `<option value="">All Suppliers</option>${options}`;
     const prodOpts = appData.products.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-    compareSelect.innerHTML = `<option value="">Select a product</option>${prodOpts}`;
+    if (compareSelect) compareSelect.innerHTML = `<option value="">Select a product</option>${prodOpts}`;
 }
 
 // ============ INVOICE ITEMS ============
@@ -786,7 +850,7 @@ async function saveInvoice() {
         setSyncStatus('synced', `(${appData.invoices.length} invoices)`);
         
     } catch (error) {
-        console.error('Firebase save failed, using localStorage:', error);
+        console.error('Save failed, using localStorage:', error);
         if (editId) {
             const index = appData.invoices.findIndex(i => i.id === editId);
             if (index !== -1) {
@@ -858,13 +922,12 @@ async function saveSupplier() {
     document.getElementById('sup-notes').value = '';
 }
 
-// ============ PRODUCT MODAL - FIXED! ============
+// ============ PRODUCT MODAL ============
 function openProductModal() { 
     document.getElementById('productModal').classList.add('open'); 
 }
 
 async function saveProduct() {
-    console.log('🔵 saveProduct called!');
     const name = document.getElementById('prod-name').value.trim();
     if (!name) { 
         alert('Product name is required.'); 
@@ -878,18 +941,13 @@ async function saveProduct() {
         notes: document.getElementById('prod-notes').value 
     };
     
-    console.log('📦 Product data:', data);
-    
     try {
         let id;
         if (window.db) {
             const docRef = await window.db.collection('products').add(data);
             id = docRef.id;
-            console.log('✅ Product saved to Firebase with ID:', id);
-            setSyncStatus('synced', `(${appData.products.length + 1} products)`);
         } else {
             id = `prod-${Date.now()}`;
-            console.log('✅ Product saved locally with ID:', id);
         }
         appData.products.push({ id, ...data });
         saveToStorage();
@@ -900,7 +958,7 @@ async function saveProduct() {
         document.getElementById('prod-unit').value = '';
         document.getElementById('prod-notes').value = '';
     } catch (error) {
-        console.error('❌ Error saving product:', error);
+        console.error('Error saving product:', error);
         const id = `prod-${Date.now()}`;
         appData.products.push({ id, ...data });
         saveToStorage();
@@ -958,8 +1016,8 @@ function filterPurchases(filter, btn) {
 }
 
 function renderPurchases() {
-    const search = document.getElementById('purchase-search').value.toLowerCase();
-    const supplier = document.getElementById('purchase-supplier-filter').value;
+    const search = document.getElementById('purchase-search')?.value?.toLowerCase() || '';
+    const supplier = document.getElementById('purchase-supplier-filter')?.value || '';
     let filtered = [...appData.invoices];
     
     if (currentFilter === 'today') { 
@@ -1134,7 +1192,7 @@ function formatDate(dateStr) {
     return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-// ============ EXPOSE ALL FUNCTIONS TO GLOBAL ============
+// ============ EXPOSE ALL FUNCTIONS ============
 window.addItemRow = addItemRow;
 window.removeItemRow = removeItemRow;
 window.updateItemTotal = updateItemTotal;
@@ -1144,7 +1202,9 @@ window.saveInvoice = saveInvoice;
 window.editInvoice = editInvoice;
 window.cancelEdit = cancelEdit;
 window.saveSupplier = saveSupplier;
+window.deleteSupplier = deleteSupplier;
 window.saveProduct = saveProduct;
+window.deleteProduct = deleteProduct;
 window.openSupplierModal = openSupplierModal;
 window.openProductModal = openProductModal;
 window.closeModal = closeModal;
@@ -1165,27 +1225,7 @@ console.log('✅ All functions exposed to window!');
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
     document.getElementById('inv-date').value = new Date().toISOString().split('T')[0];
-    
-    // Load Firebase SDK dynamically if not available
-    if (typeof firebase === 'undefined') {
-        const script = document.createElement('script');
-        script.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js';
-        script.onload = () => {
-            const firestoreScript = document.createElement('script');
-            firestoreScript.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js';
-            firestoreScript.onload = () => {
-                firebase.initializeApp(firebaseConfig);
-                window.db = firebase.firestore();
-                console.log('🔥 Firebase loaded dynamically!');
-                loadDataFromFirebase();
-            };
-            document.head.appendChild(firestoreScript);
-        };
-        document.head.appendChild(script);
-    } else {
-        loadDataFromFirebase();
-    }
-    
+    loadDataFromFirebase();
     addItemRow();
 });
 </script>
