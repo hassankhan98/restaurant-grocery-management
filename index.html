@@ -4,65 +4,68 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Restaurant Grocery Management</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <style>
         * { box-sizing: border-box; }
-        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #f8fafc; }
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #f1f5f9; }
         .sidebar { transition: transform 0.3s ease; }
         .sidebar-mobile { transform: translateX(-100%); }
         .sidebar-mobile.open { transform: translateX(0); }
-        .card { background: white; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04); transition: box-shadow 0.2s; }
-        .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
-        .stat-card { border-left: 4px solid; }
+        .card { background: white; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04); }
+        .stat-card { border-left: 4px solid; padding: 16px; background: white; border-radius: 12px; }
         .stat-card.blue { border-color: #3b82f6; }
         .stat-card.green { border-color: #22c55e; }
         .stat-card.purple { border-color: #8b5cf6; }
         .stat-card.orange { border-color: #f59e0b; }
-        .btn-primary { background: #1e293b; color: white; padding: 10px 20px; border-radius: 10px; font-weight: 500; transition: background 0.2s; }
-        .btn-primary:hover { background: #0f172a; }
-        .btn-success { background: #22c55e; color: white; padding: 10px 20px; border-radius: 10px; font-weight: 500; transition: background 0.2s; }
+        .btn-primary { background: #1e293b; color: white; padding: 8px 16px; border-radius: 8px; font-weight: 500; transition: all 0.2s; cursor: pointer; border: none; }
+        .btn-primary:hover { background: #0f172a; transform: translateY(-1px); }
+        .btn-success { background: #22c55e; color: white; padding: 8px 16px; border-radius: 8px; font-weight: 500; transition: all 0.2s; cursor: pointer; border: none; }
         .btn-success:hover { background: #16a34a; }
-        .btn-outline { border: 1.5px solid #e2e8f0; background: white; padding: 10px 20px; border-radius: 10px; font-weight: 500; transition: all 0.2s; }
+        .btn-danger { background: #ef4444; color: white; padding: 8px 16px; border-radius: 8px; font-weight: 500; transition: all 0.2s; cursor: pointer; border: none; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-outline { border: 1.5px solid #e2e8f0; background: white; padding: 8px 16px; border-radius: 8px; font-weight: 500; transition: all 0.2s; cursor: pointer; }
         .btn-outline:hover { border-color: #94a3b8; background: #f8fafc; }
-        .input-field { width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 14px; transition: border 0.2s; background: white; }
+        .input-field { width: 100%; padding: 8px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 14px; transition: border 0.2s; background: white; }
         .input-field:focus { outline: none; border-color: #1e293b; box-shadow: 0 0 0 3px rgba(30,41,59,0.1); }
         .table-wrap { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        th { text-align: left; padding: 12px 14px; background: #f1f5f9; color: #334155; font-weight: 600; }
-        td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; }
+        th { text-align: left; padding: 10px 12px; background: #f8fafc; color: #334155; font-weight: 600; border-bottom: 2px solid #e2e8f0; }
+        td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
         tr:hover td { background: #fafbfc; }
         .badge { padding: 4px 12px; border-radius: 100px; font-size: 12px; font-weight: 500; }
         .badge-green { background: #dcfce7; color: #166534; }
         .badge-blue { background: #dbeafe; color: #1e40af; }
-        .badge-gray { background: #f1f5f9; color: #475569; }
-        .tab { padding: 8px 18px; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+        .tab { padding: 6px 14px; border-radius: 6px; font-weight: 500; cursor: pointer; transition: all 0.2s; border: none; background: transparent; }
         .tab.active { background: #1e293b; color: white; }
         .tab:not(.active):hover { background: #f1f5f9; }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; }
         .modal-overlay.open { display: flex; }
-        .modal-box { background: white; border-radius: 20px; max-width: 700px; width: 95%; max-height: 90vh; overflow-y: auto; padding: 30px; }
-        .invoice-item-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
-        .invoice-item-row input, .invoice-item-row select { padding: 6px 10px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 13px; }
+        .modal-box { background: white; border-radius: 20px; max-width: 700px; width: 95%; max-height: 90vh; overflow-y: auto; padding: 24px; }
+        .invoice-item-row { display: grid; grid-template-columns: 2fr 0.8fr 0.8fr 1fr 1fr auto; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
+        .invoice-item-row input, .invoice-item-row select { padding: 6px 10px; border: 1.5px solid #e2e8f0; border-radius: 6px; font-size: 13px; background: white; }
         .invoice-item-row input:focus, .invoice-item-row select:focus { outline: none; border-color: #1e293b; }
         @media (max-width: 768px) {
             .invoice-item-row { grid-template-columns: 1fr 1fr; gap: 6px; }
         }
-        .chart-container { height: 220px; }
+        .chart-container { height: 200px; }
         .insight-card { background: #f1f5f9; border-radius: 12px; padding: 16px 20px; border-left: 4px solid #1e293b; }
         .nav-link { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 10px; color: #64748b; transition: all 0.2s; cursor: pointer; font-weight: 500; }
         .nav-link:hover { background: #f1f5f9; color: #0f172a; }
         .nav-link.active { background: #1e293b; color: white; }
         .nav-link i { width: 20px; text-align: center; }
-        .empty-state { text-align: center; padding: 50px 20px; color: #94a3b8; }
-        .empty-state i { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
+        .empty-state { text-align: center; padding: 40px 20px; color: #94a3b8; }
+        .empty-state i { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
+        .page-content { display: none; }
+        .page-content.active { display: block; }
+        .print-only { display: none; }
+        @media print {
+            .no-print { display: none; }
+            .print-only { display: block; }
+            .page-content { display: block !important; }
+            .modal-overlay { display: none !important; }
+        }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -82,18 +85,17 @@
             <button onclick="toggleSidebar()" class="md:hidden text-gray-500"><i class="fas fa-times"></i></button>
         </div>
         <nav class="flex-1 space-y-1">
-            <div class="nav-link active" data-page="dashboard"><i class="fas fa-chart-pie"></i> Dashboard</div>
-            <div class="nav-link" data-page="purchases"><i class="fas fa-receipt"></i> Purchases</div>
-            <div class="nav-link" data-page="add-invoice"><i class="fas fa-plus-circle"></i> Add Invoice</div>
-            <div class="nav-link" data-page="suppliers"><i class="fas fa-truck"></i> Suppliers</div>
-            <div class="nav-link" data-page="products"><i class="fas fa-box"></i> Products</div>
-            <div class="nav-link" data-page="price-compare"><i class="fas fa-balance-scale"></i> Price Comparison</div>
-            <div class="nav-link" data-page="analytics"><i class="fas fa-chart-line"></i> Analytics</div>
-            <div class="nav-link" data-page="reports"><i class="fas fa-file-alt"></i> Reports</div>
-            <div class="nav-link" data-page="settings"><i class="fas fa-cog"></i> Settings</div>
+            <div class="nav-link active" onclick="showPage('dashboard')"><i class="fas fa-chart-pie"></i> Dashboard</div>
+            <div class="nav-link" onclick="showPage('purchases')"><i class="fas fa-receipt"></i> Purchases</div>
+            <div class="nav-link" onclick="showPage('add-invoice')"><i class="fas fa-plus-circle"></i> Add Invoice</div>
+            <div class="nav-link" onclick="showPage('suppliers')"><i class="fas fa-truck"></i> Suppliers</div>
+            <div class="nav-link" onclick="showPage('products')"><i class="fas fa-box"></i> Products</div>
+            <div class="nav-link" onclick="showPage('price-compare')"><i class="fas fa-balance-scale"></i> Price Comparison</div>
+            <div class="nav-link" onclick="showPage('analytics')"><i class="fas fa-chart-line"></i> Analytics</div>
+            <div class="nav-link" onclick="showPage('reports')"><i class="fas fa-file-alt"></i> Reports</div>
         </nav>
         <div class="text-xs text-gray-400 mt-4 border-t pt-4">
-            <i class="fas fa-database mr-1"></i> Firebase connected
+            <i class="fas fa-database mr-1"></i> Local Storage
         </div>
     </aside>
 
@@ -111,46 +113,43 @@
             </div>
         </div>
 
-        <!-- Pages -->
-        <div id="page-dashboard" class="page-content">
-            <!-- Quick stats -->
+        <!-- Dashboard -->
+        <div id="page-dashboard" class="page-content active">
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-                <div class="card stat-card blue p-4"><div class="text-sm text-gray-500">Today's Spending</div><div class="text-2xl font-bold" id="stat-today">£0.00</div></div>
-                <div class="card stat-card green p-4"><div class="text-sm text-gray-500">Invoices</div><div class="text-2xl font-bold" id="stat-invoices">0</div></div>
-                <div class="card stat-card purple p-4"><div class="text-sm text-gray-500">Suppliers</div><div class="text-2xl font-bold" id="stat-suppliers">0</div></div>
-                <div class="card stat-card orange p-4"><div class="text-sm text-gray-500">Products</div><div class="text-2xl font-bold" id="stat-products">0</div></div>
+                <div class="stat-card blue"><div class="text-sm text-gray-500">Today's Spending</div><div class="text-2xl font-bold" id="stat-today">£0.00</div></div>
+                <div class="stat-card green"><div class="text-sm text-gray-500">Invoices</div><div class="text-2xl font-bold" id="stat-invoices">0</div></div>
+                <div class="stat-card purple"><div class="text-sm text-gray-500">Suppliers</div><div class="text-2xl font-bold" id="stat-suppliers">0</div></div>
+                <div class="stat-card orange"><div class="text-sm text-gray-500">Products</div><div class="text-2xl font-bold" id="stat-products">0</div></div>
             </div>
 
-            <!-- Supplier spending cards -->
             <div class="card p-4 mb-6">
                 <h3 class="font-semibold text-lg mb-3">Supplier Spending</h3>
                 <div id="supplier-cards" class="flex flex-wrap gap-3"></div>
             </div>
 
-            <!-- Charts row -->
             <div class="grid md:grid-cols-2 gap-4 mb-6">
-                <div class="card p-4"><h4 class="font-semibold mb-2">Daily Spending</h4><div class="chart-container"><canvas id="dailyChart"></canvas></div></div>
+                <div class="card p-4"><h4 class="font-semibold mb-2">Daily Spending (Last 7 Days)</h4><div class="chart-container"><canvas id="dailyChart"></canvas></div></div>
                 <div class="card p-4"><h4 class="font-semibold mb-2">Supplier Comparison</h4><div class="chart-container"><canvas id="supplierChart"></canvas></div></div>
             </div>
 
-            <!-- Recent purchases -->
             <div class="card p-4">
                 <h3 class="font-semibold text-lg mb-3">Recent Purchases</h3>
                 <div class="table-wrap"><table><thead><tr><th>Date</th><th>Supplier</th><th>Invoice</th><th>Items</th><th>Total</th></tr></thead><tbody id="recent-purchases"></tbody></table></div>
             </div>
         </div>
 
-        <div id="page-purchases" class="page-content hidden">
+        <!-- Purchases -->
+        <div id="page-purchases" class="page-content">
             <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
                 <div class="flex flex-wrap gap-2">
-                    <button class="tab active" data-filter="all">All</button>
-                    <button class="tab" data-filter="today">Today</button>
-                    <button class="tab" data-filter="week">This Week</button>
-                    <button class="tab" data-filter="month">This Month</button>
+                    <button class="tab active" onclick="filterPurchases('all', this)">All</button>
+                    <button class="tab" onclick="filterPurchases('today', this)">Today</button>
+                    <button class="tab" onclick="filterPurchases('week', this)">This Week</button>
+                    <button class="tab" onclick="filterPurchases('month', this)">This Month</button>
                 </div>
-                <div class="flex gap-2">
-                    <input id="purchase-search" placeholder="Search invoices..." class="input-field w-48 text-sm" />
-                    <select id="purchase-supplier-filter" class="input-field w-32 text-sm"><option value="">All Suppliers</option></select>
+                <div class="flex gap-2 flex-wrap">
+                    <input id="purchase-search" placeholder="Search..." class="input-field w-48 text-sm" oninput="renderPurchases()" />
+                    <select id="purchase-supplier-filter" class="input-field w-32 text-sm" onchange="renderPurchases()"><option value="">All Suppliers</option></select>
                 </div>
             </div>
             <div class="card p-0 overflow-hidden">
@@ -158,7 +157,8 @@
             </div>
         </div>
 
-        <div id="page-add-invoice" class="page-content hidden">
+        <!-- Add Invoice -->
+        <div id="page-add-invoice" class="page-content">
             <div class="card p-4 md:p-6 max-w-4xl">
                 <h2 class="text-xl font-bold mb-4">Add New Invoice</h2>
                 <div class="grid md:grid-cols-2 gap-4 mb-4">
@@ -166,29 +166,20 @@
                     <div><label class="block text-sm font-medium mb-1">Purchase Date</label><input id="inv-date" class="input-field" type="date" /></div>
                     <div><label class="block text-sm font-medium mb-1">Supplier</label>
                         <select id="inv-supplier" class="input-field"><option value="">Select supplier</option></select>
-                        <button onclick="addNewSupplierFromInvoice()" class="text-sm text-blue-600 mt-1"><i class="fas fa-plus"></i> Add new supplier</button>
+                        <button onclick="openSupplierModal()" class="text-sm text-blue-600 mt-1"><i class="fas fa-plus"></i> Add new supplier</button>
                     </div>
                     <div><label class="block text-sm font-medium mb-1">Supplier Invoice Ref</label><input id="inv-ref" class="input-field" placeholder="Optional ref" /></div>
                 </div>
                 <div class="mb-2"><label class="block text-sm font-medium mb-1">Notes</label><input id="inv-notes" class="input-field" placeholder="Optional notes" /></div>
                 
                 <h4 class="font-semibold mt-4 mb-2">Invoice Items</h4>
-                <div id="invoice-items-container" class="space-y-2">
-                    <div class="invoice-item-row">
-                        <select class="item-product"><option value="">Product</option></select>
-                        <input class="item-qty" type="number" placeholder="Qty" value="1" />
-                        <input class="item-unit" placeholder="Unit" value="Box" />
-                        <input class="item-price" type="number" placeholder="Unit Price" step="0.01" />
-                        <input class="item-total" type="text" placeholder="Total" readonly />
-                        <button onclick="removeItemRow(this)" class="text-red-500"><i class="fas fa-trash"></i></button>
-                    </div>
-                </div>
+                <div id="invoice-items-container" class="space-y-2"></div>
                 <button onclick="addItemRow()" class="btn-outline text-sm mt-2"><i class="fas fa-plus"></i> Add Item</button>
                 
                 <div class="mt-4 p-4 bg-gray-50 rounded-xl">
                     <div class="flex justify-between"><span>Subtotal:</span><span id="inv-subtotal">£0.00</span></div>
-                    <div class="flex justify-between"><span>Discount:</span><span><input id="inv-discount" class="input-field w-24 inline" type="number" step="0.01" placeholder="0" /> £</span></div>
-                    <div class="flex justify-between"><span>Tax:</span><span><input id="inv-tax" class="input-field w-24 inline" type="number" step="0.01" placeholder="0" /> £</span></div>
+                    <div class="flex justify-between"><span>Discount:</span><span><input id="inv-discount" class="input-field w-24 inline" type="number" step="0.01" placeholder="0" oninput="updateInvoiceTotals()" /> £</span></div>
+                    <div class="flex justify-between"><span>Tax:</span><span><input id="inv-tax" class="input-field w-24 inline" type="number" step="0.01" placeholder="0" oninput="updateInvoiceTotals()" /> £</span></div>
                     <div class="flex justify-between font-bold text-lg"><span>Grand Total:</span><span id="inv-grand-total">£0.00</span></div>
                 </div>
                 
@@ -199,35 +190,40 @@
             </div>
         </div>
 
-        <div id="page-suppliers" class="page-content hidden">
+        <!-- Suppliers -->
+        <div id="page-suppliers" class="page-content">
             <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold">Suppliers</h2><button onclick="openSupplierModal()" class="btn-primary text-sm"><i class="fas fa-plus"></i> Add Supplier</button></div>
             <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4" id="supplier-grid"></div>
         </div>
 
-        <div id="page-products" class="page-content hidden">
+        <!-- Products -->
+        <div id="page-products" class="page-content">
             <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold">Products</h2><button onclick="openProductModal()" class="btn-primary text-sm"><i class="fas fa-plus"></i> Add Product</button></div>
             <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3" id="product-grid"></div>
         </div>
 
-        <div id="page-price-compare" class="page-content hidden">
+        <!-- Price Comparison -->
+        <div id="page-price-compare" class="page-content">
             <h2 class="text-xl font-bold mb-4">Price Comparison</h2>
-            <div class="mb-4"><select id="compare-product-select" class="input-field w-64"><option value="">Select a product</option></select></div>
+            <div class="mb-4"><select id="compare-product-select" class="input-field w-64" onchange="comparePrices()"><option value="">Select a product</option></select></div>
             <div id="compare-results" class="card p-4"></div>
         </div>
 
-        <div id="page-analytics" class="page-content hidden">
+        <!-- Analytics -->
+        <div id="page-analytics" class="page-content">
             <h2 class="text-xl font-bold mb-4">Analytics</h2>
             <div class="flex flex-wrap gap-2 mb-4">
-                <button class="tab active" data-period="today">Today</button>
-                <button class="tab" data-period="week">This Week</button>
-                <button class="tab" data-period="month">This Month</button>
-                <button class="tab" data-period="quarter">Last 3 Months</button>
-                <button class="tab" data-period="year">This Year</button>
+                <button class="tab active" onclick="runAnalytics('today', this)">Today</button>
+                <button class="tab" onclick="runAnalytics('week', this)">This Week</button>
+                <button class="tab" onclick="runAnalytics('month', this)">This Month</button>
+                <button class="tab" onclick="runAnalytics('quarter', this)">Last 3 Months</button>
+                <button class="tab" onclick="runAnalytics('year', this)">This Year</button>
             </div>
             <div id="analytics-content" class="grid md:grid-cols-2 gap-4"></div>
         </div>
 
-        <div id="page-reports" class="page-content hidden">
+        <!-- Reports -->
+        <div id="page-reports" class="page-content">
             <h2 class="text-xl font-bold mb-4">Reports</h2>
             <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div class="card p-4 text-center"><i class="fas fa-file-pdf text-3xl text-red-500 mb-2 block"></i><button onclick="generateReport('pdf')" class="btn-primary text-sm">Download PDF</button></div>
@@ -235,139 +231,112 @@
                 <div class="card p-4 text-center"><i class="fas fa-print text-3xl text-gray-600 mb-2 block"></i><button onclick="window.print()" class="btn-primary text-sm">Print</button></div>
             </div>
         </div>
-
-        <div id="page-settings" class="page-content hidden">
-            <h2 class="text-xl font-bold mb-4">Settings</h2>
-            <div class="card p-4 max-w-lg"><p class="text-gray-500">Data is stored in Firebase Firestore. You can manage your data here.</p><button onclick="clearAllData()" class="btn-outline text-red-500 mt-4"><i class="fas fa-trash"></i> Clear All Demo Data</button></div>
-        </div>
     </main>
 </div>
 
 <!-- Supplier Modal -->
 <div id="supplierModal" class="modal-overlay"><div class="modal-box"><h3 class="text-xl font-bold mb-4">Add Supplier</h3>
-    <div class="space-y-3"><input id="sup-name" class="input-field" placeholder="Supplier Name" /><input id="sup-contact" class="input-field" placeholder="Contact Person" /><input id="sup-phone" class="input-field" placeholder="Phone" /><input id="sup-email" class="input-field" placeholder="Email" /><input id="sup-address" class="input-field" placeholder="Address" /><input id="sup-notes" class="input-field" placeholder="Notes" /></div>
+    <div class="space-y-3"><input id="sup-name" class="input-field" placeholder="Supplier Name *" /><input id="sup-contact" class="input-field" placeholder="Contact Person" /><input id="sup-phone" class="input-field" placeholder="Phone" /><input id="sup-email" class="input-field" placeholder="Email" /><input id="sup-address" class="input-field" placeholder="Address" /><input id="sup-notes" class="input-field" placeholder="Notes" /></div>
     <div class="flex gap-3 mt-4"><button onclick="saveSupplier()" class="btn-primary">Save</button><button onclick="closeModal('supplierModal')" class="btn-outline">Cancel</button></div>
 </div></div>
 
 <!-- Product Modal -->
 <div id="productModal" class="modal-overlay"><div class="modal-box"><h3 class="text-xl font-bold mb-4">Add Product</h3>
-    <div class="space-y-3"><input id="prod-name" class="input-field" placeholder="Product Name" /><select id="prod-category" class="input-field"><option value="Vegetables">Vegetables</option><option value="Fruits">Fruits</option><option value="Meat">Meat</option><option value="Dairy">Dairy</option><option value="Dry Goods">Dry Goods</option><option value="Frozen">Frozen</option><option value="Drinks">Drinks</option><option value="Cleaning">Cleaning</option><option value="Other">Other</option></select><input id="prod-unit" class="input-field" placeholder="Unit (e.g. Box, kg)" /><input id="prod-notes" class="input-field" placeholder="Notes" /></div>
+    <div class="space-y-3"><input id="prod-name" class="input-field" placeholder="Product Name *" /><select id="prod-category" class="input-field"><option value="Vegetables">Vegetables</option><option value="Fruits">Fruits</option><option value="Meat">Meat</option><option value="Dairy">Dairy</option><option value="Dry Goods">Dry Goods</option><option value="Frozen">Frozen</option><option value="Drinks">Drinks</option><option value="Cleaning">Cleaning</option><option value="Other">Other</option></select><input id="prod-unit" class="input-field" placeholder="Unit (e.g. Box, kg)" /><input id="prod-notes" class="input-field" placeholder="Notes" /></div>
     <div class="flex gap-3 mt-4"><button onclick="saveProduct()" class="btn-primary">Save</button><button onclick="closeModal('productModal')" class="btn-outline">Cancel</button></div>
 </div></div>
 
 <script>
-// ============ FIREBASE CONFIG ============
-// REPLACE WITH YOUR FIREBASE CONFIG
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyAwegncbGVk-qr_dGWuTXU_Wq0CnG_7elk",
-  authDomain: "restaurant-grocery-management.firebaseapp.com",
-  projectId: "restaurant-grocery-management",
-  storageBucket: "restaurant-grocery-management.firebasestorage.app",
-  messagingSenderId: "506737153584",
-  appId: "1:506737153584:web:6f7b7d1d73f7b3ed96bff5",
-  measurementId: "G-NX1MC2EVWJ"
+// ============ DATA STORE ============
+let appData = {
+    suppliers: [],
+    products: [],
+    invoices: [],
+    invoiceItems: []
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-
-// ============ STATE ============
-let suppliers = [];
-let products = [];
-let invoices = [];
-let invoiceItems = [];
-let currentPage = 'dashboard';
 let charts = { daily: null, supplier: null };
+let currentFilter = 'all';
 
 // ============ INIT ============
-async function init() {
-    await loadData();
-    setupEventListeners();
-    renderDashboard();
-    renderSuppliers();
-    renderProducts();
-    populateSelects();
+function init() {
+    loadFromStorage();
+    if (appData.suppliers.length === 0) loadDemoData();
+    saveToStorage();
     document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
     document.getElementById('inv-date').value = new Date().toISOString().split('T')[0];
+    refreshAll();
+    addItemRow();
 }
 
-// ============ LOAD DATA ============
-async function loadData() {
+// ============ LOCAL STORAGE ============
+function saveToStorage() {
     try {
-        const supSnap = await db.collection('suppliers').get();
-        suppliers = supSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        const prodSnap = await db.collection('products').get();
-        products = prodSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        const invSnap = await db.collection('invoices').orderBy('purchaseDate', 'desc').get();
-        invoices = invSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        const itemSnap = await db.collection('invoiceItems').get();
-        invoiceItems = itemSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-    } catch (e) { console.warn('Firebase not configured, using demo data.'); loadDemoData(); }
+        localStorage.setItem('restaurantData', JSON.stringify(appData));
+    } catch(e) { console.warn('Could not save to localStorage'); }
+}
+
+function loadFromStorage() {
+    try {
+        const data = localStorage.getItem('restaurantData');
+        if (data) {
+            const parsed = JSON.parse(data);
+            appData = parsed;
+        }
+    } catch(e) { console.warn('Could not load from localStorage'); }
 }
 
 // ============ DEMO DATA ============
 function loadDemoData() {
     const demoSuppliers = [
-        { name: 'Chowdhury', contactPerson: 'Mr. Chowdhury', phone: '07123456789', email: 'chowdhury@demo.com', address: '123 Main St', notes: '' },
-        { name: 'Lidl', contactPerson: 'Store Manager', phone: '07123456788', email: 'lidl@demo.com', address: '456 High St', notes: '' },
-        { name: 'Durani', contactPerson: 'Mr. Durani', phone: '07123456787', email: 'durani@demo.com', address: '789 Market Rd', notes: '' },
-        { name: 'Costco', contactPerson: 'Wholesale', phone: '07123456786', email: 'costco@demo.com', address: '101 Retail Park', notes: '' }
+        { id: 'sup1', name: 'Chowdhury', contactPerson: 'Mr. Chowdhury', phone: '07123456789', email: 'chowdhury@demo.com', address: '123 Main St', notes: '' },
+        { id: 'sup2', name: 'Lidl', contactPerson: 'Store Manager', phone: '07123456788', email: 'lidl@demo.com', address: '456 High St', notes: '' },
+        { id: 'sup3', name: 'Durani', contactPerson: 'Mr. Durani', phone: '07123456787', email: 'durani@demo.com', address: '789 Market Rd', notes: '' },
+        { id: 'sup4', name: 'Costco', contactPerson: 'Wholesale', phone: '07123456786', email: 'costco@demo.com', address: '101 Retail Park', notes: '' }
     ];
-    suppliers = demoSuppliers.map((s, i) => ({ id: `sup-${i}`, ...s }));
-
+    
     const demoProducts = [
-        { name: 'Tomatoes', category: 'Vegetables', unit: 'Box', notes: '' },
-        { name: 'Onions', category: 'Vegetables', unit: 'Box', notes: '' },
-        { name: 'Potatoes', category: 'Vegetables', unit: 'Bag', notes: '' },
-        { name: 'Chicken', category: 'Meat', unit: 'kg', notes: '' },
-        { name: 'Rice', category: 'Dry Goods', unit: 'Bag', notes: '' },
-        { name: 'Cooking Oil', category: 'Dry Goods', unit: 'Litre', notes: '' },
-        { name: 'Flour', category: 'Dry Goods', unit: 'Bag', notes: '' },
-        { name: 'Milk', category: 'Dairy', unit: 'Litre', notes: '' },
-        { name: 'Cheese', category: 'Dairy', unit: 'kg', notes: '' }
+        { id: 'prod1', name: 'Tomatoes', category: 'Vegetables', unit: 'Box', notes: '' },
+        { id: 'prod2', name: 'Onions', category: 'Vegetables', unit: 'Box', notes: '' },
+        { id: 'prod3', name: 'Potatoes', category: 'Vegetables', unit: 'Bag', notes: '' },
+        { id: 'prod4', name: 'Chicken', category: 'Meat', unit: 'kg', notes: '' },
+        { id: 'prod5', name: 'Rice', category: 'Dry Goods', unit: 'Bag', notes: '' },
+        { id: 'prod6', name: 'Cooking Oil', category: 'Dry Goods', unit: 'Litre', notes: '' },
+        { id: 'prod7', name: 'Flour', category: 'Dry Goods', unit: 'Bag', notes: '' },
+        { id: 'prod8', name: 'Milk', category: 'Dairy', unit: 'Litre', notes: '' },
+        { id: 'prod9', name: 'Cheese', category: 'Dairy', unit: 'kg', notes: '' }
     ];
-    products = demoProducts.map((p, i) => ({ id: `prod-${i}`, ...p }));
-
-    // Generate demo invoices
+    
+    appData.suppliers = demoSuppliers;
+    appData.products = demoProducts;
+    appData.invoices = [];
+    appData.invoiceItems = [];
+    
     const now = new Date();
-    const dates = [];
-    for (let i = 0; i < 20; i++) { const d = new Date(); d.setDate(d.getDate() - i); dates.push(d); }
-    invoices = [];
-    invoiceItems = [];
-    let invCount = 0;
-    const itemNames = ['Tomatoes', 'Onions', 'Potatoes', 'Chicken', 'Rice', 'Oil', 'Flour', 'Milk', 'Cheese'];
-    const supplierNames = ['Chowdhury', 'Lidl', 'Durani', 'Costco'];
-    const units = ['Box', 'Box', 'Bag', 'kg', 'Bag', 'Litre', 'Bag', 'Litre', 'kg'];
-
     for (let i = 0; i < 15; i++) {
-        const date = dates[i % dates.length];
-        const supIdx = i % supplierNames.length;
-        const sup = suppliers[supIdx];
-        const invId = `inv-${String(invCount++).padStart(3,'0')}`;
-        const numItems = 2 + (i % 4);
+        const d = new Date(now);
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        const supIdx = i % demoSuppliers.length;
+        const sup = demoSuppliers[supIdx];
+        const invId = `inv-${String(i+1).padStart(3,'0')}`;
+        const numItems = 2 + (i % 3);
         let subtotal = 0;
         const items = [];
         for (let j = 0; j < numItems; j++) {
-            const prodIdx = (i + j) % itemNames.length;
-            const prod = products[prodIdx] || { name: itemNames[prodIdx], unit: units[prodIdx] };
-            const qty = 1 + (i % 4);
-            const price = 5 + (i % 15) + (j * 2);
+            const prodIdx = (i + j) % demoProducts.length;
+            const prod = demoProducts[prodIdx];
+            const qty = 1 + (i % 3);
+            const price = 5 + (i % 12) + (j * 2);
             const total = qty * price;
             subtotal += total;
             items.push({
-                productId: prod.id || `prod-${prodIdx}`,
+                id: `item-${invId}-${j}`,
+                invoiceId: invId,
+                productId: prod.id,
                 productName: prod.name,
                 quantity: qty,
-                unit: prod.unit || 'Unit',
+                unit: prod.unit,
                 unitPrice: price,
                 total: total
             });
@@ -375,98 +344,94 @@ function loadDemoData() {
         const discount = Math.round((subtotal * 0.05) * 100) / 100;
         const tax = Math.round((subtotal * 0.1) * 100) / 100;
         const total = subtotal - discount + tax;
-        const invoice = {
+        appData.invoices.push({
             id: invId,
             invoiceNumber: invId,
             supplierId: sup.id,
             supplierName: sup.name,
-            purchaseDate: date.toISOString().split('T')[0],
+            purchaseDate: dateStr,
             subtotal: subtotal,
             discount: discount,
             tax: tax,
             total: total,
             notes: '',
-            createdAt: date.toISOString()
-        };
-        invoices.push(invoice);
-        items.forEach(item => {
-            invoiceItems.push({
-                id: `item-${invId}-${Math.random().toString(36).substr(2,4)}`,
-                invoiceId: invId,
-                productId: item.productId,
-                productName: item.productName,
-                quantity: item.quantity,
-                unit: item.unit,
-                unitPrice: item.unitPrice,
-                total: item.total
-            });
+            createdAt: dateStr
         });
+        appData.invoiceItems.push(...items);
     }
+}
+
+// ============ REFRESH ALL ============
+function refreshAll() {
+    renderDashboard();
+    renderSuppliers();
+    renderProducts();
+    populateSelects();
+    renderPurchases();
+    document.getElementById('compare-product-select').value = '';
+    document.getElementById('compare-results').innerHTML = '<div class="empty-state"><i class="fas fa-balance-scale"></i><p>Select a product to compare prices</p></div>';
 }
 
 // ============ RENDER DASHBOARD ============
 function renderDashboard() {
     const today = new Date().toISOString().split('T')[0];
-    const todayInvs = invoices.filter(inv => inv.purchaseDate === today);
+    const todayInvs = appData.invoices.filter(inv => inv.purchaseDate === today);
     const todayTotal = todayInvs.reduce((sum, inv) => sum + inv.total, 0);
     document.getElementById('stat-today').textContent = `£${todayTotal.toFixed(2)}`;
-    document.getElementById('stat-invoices').textContent = invoices.length;
-    document.getElementById('stat-suppliers').textContent = suppliers.length;
-    document.getElementById('stat-products').textContent = products.length;
+    document.getElementById('stat-invoices').textContent = appData.invoices.length;
+    document.getElementById('stat-suppliers').textContent = appData.suppliers.length;
+    document.getElementById('stat-products').textContent = appData.products.length;
 
-    // Supplier cards
     const supSpending = {};
-    invoices.forEach(inv => {
+    appData.invoices.forEach(inv => {
         const name = inv.supplierName || 'Unknown';
         supSpending[name] = (supSpending[name] || 0) + inv.total;
     });
     const container = document.getElementById('supplier-cards');
-    container.innerHTML = Object.entries(supSpending).sort((a,b) => b[1]-a[1]).slice(0,4).map(([name, total]) =>
+    const entries = Object.entries(supSpending).sort((a,b) => b[1]-a[1]);
+    container.innerHTML = entries.length ? entries.slice(0,4).map(([name, total]) =>
         `<div class="bg-gray-50 px-4 py-2 rounded-xl border border-gray-100"><span class="font-medium">${name}</span> <span class="text-sm text-gray-600">£${total.toFixed(2)}</span></div>`
-    ).join('');
+    ).join('') : '<div class="text-gray-400 text-sm">No supplier data yet</div>';
 
-    // Recent purchases
-    const recent = invoices.slice(0,8);
-    document.getElementById('recent-purchases').innerHTML = recent.map(inv => {
-        const items = invoiceItems.filter(it => it.invoiceId === inv.id);
+    const recent = appData.invoices.slice(0,8);
+    document.getElementById('recent-purchases').innerHTML = recent.length ? recent.map(inv => {
+        const items = appData.invoiceItems.filter(it => it.invoiceId === inv.id);
         const itemNames = items.map(it => it.productName || 'Unknown').slice(0,3).join(', ') + (items.length > 3 ? ` +${items.length-3}` : '');
         return `<tr><td>${formatDate(inv.purchaseDate)}</td><td>${inv.supplierName || 'Unknown'}</td><td>${inv.invoiceNumber}</td><td>${itemNames}</td><td>£${inv.total.toFixed(2)}</td></tr>`;
-    }).join('');
+    }).join('') : '<tr><td colspan="5" class="text-center text-gray-400 py-4">No purchases yet</td></tr>';
 
-    // Charts
     updateCharts();
 }
 
 // ============ CHARTS ============
 function updateCharts() {
-    // Daily spending last 7 days
     const days = [];
     const amounts = [];
     for (let i = 6; i >= 0; i--) {
         const d = new Date(); d.setDate(d.getDate() - i);
         const ds = d.toISOString().split('T')[0];
         days.push(d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }));
-        const total = invoices.filter(inv => inv.purchaseDate === ds).reduce((s, inv) => s + inv.total, 0);
+        const total = appData.invoices.filter(inv => inv.purchaseDate === ds).reduce((s, inv) => s + inv.total, 0);
         amounts.push(total);
     }
     const ctx1 = document.getElementById('dailyChart').getContext('2d');
     if (charts.daily) charts.daily.destroy();
-    charts.daily = new Chart(ctx1, { type: 'bar', data: { labels: days, datasets: [{ label: 'Spending (£)', data: amounts, backgroundColor: '#3b82f6', borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+    charts.daily = new Chart(ctx1, { type: 'bar', data: { labels: days, datasets: [{ label: 'Spending (£)', data: amounts, backgroundColor: '#3b82f6', borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
 
-    // Supplier comparison
     const supSpending = {};
-    invoices.forEach(inv => { const name = inv.supplierName || 'Unknown'; supSpending[name] = (supSpending[name] || 0) + inv.total; });
+    appData.invoices.forEach(inv => { const name = inv.supplierName || 'Unknown'; supSpending[name] = (supSpending[name] || 0) + inv.total; });
     const ctx2 = document.getElementById('supplierChart').getContext('2d');
     if (charts.supplier) charts.supplier.destroy();
-    charts.supplier = new Chart(ctx2, { type: 'doughnut', data: { labels: Object.keys(supSpending), datasets: [{ data: Object.values(supSpending), backgroundColor: ['#3b82f6', '#22c55e', '#8b5cf6', '#f59e0b', '#ef4444'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
+    const colors = ['#3b82f6', '#22c55e', '#8b5cf6', '#f59e0b', '#ef4444', '#06b6d4', '#ec4899'];
+    charts.supplier = new Chart(ctx2, { type: 'doughnut', data: { labels: Object.keys(supSpending), datasets: [{ data: Object.values(supSpending), backgroundColor: colors.slice(0, Object.keys(supSpending).length) }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
 }
 
 // ============ RENDER SUPPLIERS ============
 function renderSuppliers() {
     const grid = document.getElementById('supplier-grid');
-    if (!suppliers.length) { grid.innerHTML = '<div class="empty-state col-span-full"><i class="fas fa-truck"></i><p>No suppliers yet</p></div>'; return; }
-    grid.innerHTML = suppliers.map(s => {
-        const spent = invoices.filter(inv => inv.supplierId === s.id).reduce((sum, inv) => sum + inv.total, 0);
+    if (!appData.suppliers.length) { grid.innerHTML = '<div class="empty-state col-span-full"><i class="fas fa-truck"></i><p>No suppliers yet</p></div>'; return; }
+    grid.innerHTML = appData.suppliers.map(s => {
+        const spent = appData.invoices.filter(inv => inv.supplierId === s.id).reduce((sum, inv) => sum + inv.total, 0);
         return `<div class="card p-4"><div class="font-bold">${s.name}</div><div class="text-sm text-gray-500">${s.contactPerson || ''}</div><div class="text-sm text-gray-500">${s.phone || ''}</div><div class="mt-2 text-sm">Spent: <span class="font-semibold">£${spent.toFixed(2)}</span></div></div>`;
     }).join('');
 }
@@ -474,24 +439,23 @@ function renderSuppliers() {
 // ============ RENDER PRODUCTS ============
 function renderProducts() {
     const grid = document.getElementById('product-grid');
-    if (!products.length) { grid.innerHTML = '<div class="empty-state col-span-full"><i class="fas fa-box"></i><p>No products yet</p></div>'; return; }
-    grid.innerHTML = products.map(p => {
-        const lastPrice = invoiceItems.filter(it => it.productId === p.id).sort((a,b) => new Date(b.purchaseDate) - new Date(a.purchaseDate))[0];
-        return `<div class="card p-3"><div class="font-medium">${p.name}</div><div class="text-sm text-gray-500">${p.category || ''} · ${p.unit || ''}</div>${lastPrice ? `<div class="text-sm mt-1">Last: £${lastPrice.unitPrice.toFixed(2)}</div>` : ''}</div>`;
+    if (!appData.products.length) { grid.innerHTML = '<div class="empty-state col-span-full"><i class="fas fa-box"></i><p>No products yet</p></div>'; return; }
+    grid.innerHTML = appData.products.map(p => {
+        const items = appData.invoiceItems.filter(it => it.productId === p.id);
+        const lastPrice = items.length ? items.sort((a,b) => new Date(b.purchaseDate) - new Date(a.purchaseDate))[0] : null;
+        return `<div class="card p-3"><div class="font-medium">${p.name}</div><div class="text-sm text-gray-500">${p.category || ''} · ${p.unit || ''}</div>${lastPrice ? `<div class="text-sm mt-1">Last: £${lastPrice.unitPrice.toFixed(2)}</div>` : '<div class="text-sm mt-1 text-gray-400">No purchases</div>'}</div>`;
     }).join('');
 }
 
 // ============ POPULATE SELECTS ============
 function populateSelects() {
     const supSelect = document.getElementById('inv-supplier');
-    const prodSelects = document.querySelectorAll('.item-product');
     const filterSelect = document.getElementById('purchase-supplier-filter');
     const compareSelect = document.getElementById('compare-product-select');
-    const options = suppliers.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+    const options = appData.suppliers.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
     supSelect.innerHTML = `<option value="">Select supplier</option>${options}`;
     filterSelect.innerHTML = `<option value="">All Suppliers</option>${options}`;
-    const prodOpts = products.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-    prodSelects.forEach(sel => sel.innerHTML = `<option value="">Product</option>${prodOpts}`);
+    const prodOpts = appData.products.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
     compareSelect.innerHTML = `<option value="">Select a product</option>${prodOpts}`;
 }
 
@@ -500,18 +464,16 @@ function addItemRow(productId = '', qty = 1, unit = 'Box', price = '') {
     const container = document.getElementById('invoice-items-container');
     const row = document.createElement('div');
     row.className = 'invoice-item-row';
-    const prodOpts = products.map(p => `<option value="${p.id}" ${p.id === productId ? 'selected' : ''}>${p.name}</option>`).join('');
+    const prodOpts = appData.products.map(p => `<option value="${p.id}" ${p.id === productId ? 'selected' : ''}>${p.name}</option>`).join('');
     row.innerHTML = `
-        <select class="item-product"><option value="">Product</option>${prodOpts}</select>
-        <input class="item-qty" type="number" placeholder="Qty" value="${qty}" />
-        <input class="item-unit" placeholder="Unit" value="${unit}" />
-        <input class="item-price" type="number" placeholder="Unit Price" step="0.01" value="${price}" />
+        <select class="item-product" onchange="updateItemTotal(this.closest('.invoice-item-row'))"><option value="">Product</option>${prodOpts}</select>
+        <input class="item-qty" type="number" placeholder="Qty" value="${qty}" oninput="updateItemTotal(this.closest('.invoice-item-row'))" />
+        <input class="item-unit" placeholder="Unit" value="${unit}" oninput="updateItemTotal(this.closest('.invoice-item-row'))" />
+        <input class="item-price" type="number" placeholder="Unit Price" step="0.01" value="${price}" oninput="updateItemTotal(this.closest('.invoice-item-row'))" />
         <input class="item-total" type="text" placeholder="Total" readonly />
-        <button onclick="removeItemRow(this)" class="text-red-500"><i class="fas fa-trash"></i></button>
+        <button onclick="removeItemRow(this)" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
     `;
     container.appendChild(row);
-    row.querySelectorAll('.item-qty, .item-price').forEach(el => el.addEventListener('input', () => updateItemTotal(row)));
-    row.querySelector('.item-product').addEventListener('change', () => updateItemTotal(row));
     updateItemTotal(row);
     updateInvoiceTotals();
 }
@@ -546,10 +508,10 @@ function updateInvoiceTotals() {
 }
 
 // ============ SAVE INVOICE ============
-async function saveInvoice() {
+function saveInvoice() {
     const supplierId = document.getElementById('inv-supplier').value;
     const date = document.getElementById('inv-date').value;
-    const invNum = document.getElementById('inv-number').value || `INV-${String(invoices.length+1).padStart(3,'0')}`;
+    const invNum = document.getElementById('inv-number').value || `INV-${String(appData.invoices.length+1).padStart(3,'0')}`;
     const ref = document.getElementById('inv-ref').value;
     const notes = document.getElementById('inv-notes').value;
 
@@ -559,6 +521,7 @@ async function saveInvoice() {
     const rows = document.querySelectorAll('.invoice-item-row');
     const items = [];
     let subtotal = 0;
+    let valid = false;
     rows.forEach(row => {
         const productId = row.querySelector('.item-product').value;
         const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
@@ -566,19 +529,30 @@ async function saveInvoice() {
         const price = parseFloat(row.querySelector('.item-price').value) || 0;
         const total = qty * price;
         if (productId && qty > 0 && price > 0) {
-            const prod = products.find(p => p.id === productId);
-            items.push({ productId, productName: prod ? prod.name : 'Unknown', quantity: qty, unit, unitPrice: price, total });
+            const prod = appData.products.find(p => p.id === productId);
+            items.push({ 
+                id: `item-${invNum}-${items.length}`,
+                invoiceId: invNum,
+                productId, 
+                productName: prod ? prod.name : 'Unknown', 
+                quantity: qty, 
+                unit, 
+                unitPrice: price, 
+                total 
+            });
             subtotal += total;
+            valid = true;
         }
     });
-    if (!items.length) { alert('Add at least one valid item.'); return; }
+    if (!valid) { alert('Add at least one valid item with product, quantity and price.'); return; }
 
     const discount = parseFloat(document.getElementById('inv-discount').value) || 0;
     const tax = parseFloat(document.getElementById('inv-tax').value) || 0;
     const total = subtotal - discount + tax;
-    const supplier = suppliers.find(s => s.id === supplierId);
+    const supplier = appData.suppliers.find(s => s.id === supplierId);
 
     const invoice = {
+        id: invNum,
         invoiceNumber: invNum,
         supplierId,
         supplierName: supplier ? supplier.name : 'Unknown',
@@ -588,35 +562,15 @@ async function saveInvoice() {
         tax,
         total,
         notes,
-        createdAt: new Date().toISOString()
+        createdAt: date
     };
 
-    try {
-        const docRef = await db.collection('invoices').add(invoice);
-        for (const item of items) {
-            await db.collection('invoiceItems').add({ ...item, invoiceId: docRef.id });
-        }
-        invoices.push({ id: docRef.id, ...invoice });
-        for (const item of items) invoiceItems.push({ id: `item-${docRef.id}-${Math.random().toString(36).substr(2,4)}`, invoiceId: docRef.id, ...item });
-        alert('Invoice saved successfully!');
-        resetInvoiceForm();
-        renderDashboard();
-        renderSuppliers();
-        renderProducts();
-        populateSelects();
-    } catch (e) {
-        // Fallback to local
-        const newId = `inv-${String(invoices.length+1).padStart(3,'0')}`;
-        const newInv = { id: newId, ...invoice };
-        invoices.push(newInv);
-        items.forEach(item => invoiceItems.push({ id: `item-${newId}-${Math.random().toString(36).substr(2,4)}`, invoiceId: newId, ...item }));
-        alert('Invoice saved locally (Firebase not configured).');
-        resetInvoiceForm();
-        renderDashboard();
-        renderSuppliers();
-        renderProducts();
-        populateSelects();
-    }
+    appData.invoices.push(invoice);
+    appData.invoiceItems.push(...items);
+    saveToStorage();
+    alert('Invoice saved successfully!');
+    resetInvoiceForm();
+    refreshAll();
 }
 
 function resetInvoiceForm() {
@@ -629,26 +583,29 @@ function resetInvoiceForm() {
     document.getElementById('inv-tax').value = '';
     document.getElementById('invoice-items-container').innerHTML = '';
     addItemRow();
+    updateInvoiceTotals();
 }
 
 // ============ SUPPLIER MODAL ============
 function openSupplierModal() { document.getElementById('supplierModal').classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-async function saveSupplier() {
+
+function saveSupplier() {
     const name = document.getElementById('sup-name').value.trim();
     if (!name) { alert('Supplier name is required.'); return; }
-    const data = { name, contactPerson: document.getElementById('sup-contact').value, phone: document.getElementById('sup-phone').value, email: document.getElementById('sup-email').value, address: document.getElementById('sup-address').value, notes: document.getElementById('sup-notes').value };
-    try {
-        const docRef = await db.collection('suppliers').add(data);
-        suppliers.push({ id: docRef.id, ...data });
-    } catch (e) {
-        const id = `sup-${Date.now()}`;
-        suppliers.push({ id, ...data });
-    }
+    const data = { 
+        id: `sup-${Date.now()}`,
+        name, 
+        contactPerson: document.getElementById('sup-contact').value, 
+        phone: document.getElementById('sup-phone').value, 
+        email: document.getElementById('sup-email').value, 
+        address: document.getElementById('sup-address').value, 
+        notes: document.getElementById('sup-notes').value 
+    };
+    appData.suppliers.push(data);
+    saveToStorage();
     closeModal('supplierModal');
-    renderSuppliers();
-    populateSelects();
-    renderDashboard();
+    refreshAll();
     document.getElementById('sup-name').value = '';
     document.getElementById('sup-contact').value = '';
     document.getElementById('sup-phone').value = '';
@@ -657,47 +614,44 @@ async function saveSupplier() {
     document.getElementById('sup-notes').value = '';
 }
 
-function addNewSupplierFromInvoice() {
-    openSupplierModal();
-    document.getElementById('sup-name').focus();
-}
-
 // ============ PRODUCT MODAL ============
 function openProductModal() { document.getElementById('productModal').classList.add('open'); }
-async function saveProduct() {
+
+function saveProduct() {
     const name = document.getElementById('prod-name').value.trim();
     if (!name) { alert('Product name is required.'); return; }
-    const data = { name, category: document.getElementById('prod-category').value, unit: document.getElementById('prod-unit').value, notes: document.getElementById('prod-notes').value };
-    try {
-        const docRef = await db.collection('products').add(data);
-        products.push({ id: docRef.id, ...data });
-    } catch (e) {
-        const id = `prod-${Date.now()}`;
-        products.push({ id, ...data });
-    }
+    const data = { 
+        id: `prod-${Date.now()}`,
+        name, 
+        category: document.getElementById('prod-category').value, 
+        unit: document.getElementById('prod-unit').value, 
+        notes: document.getElementById('prod-notes').value 
+    };
+    appData.products.push(data);
+    saveToStorage();
     closeModal('productModal');
-    renderProducts();
-    populateSelects();
-    renderDashboard();
+    refreshAll();
     document.getElementById('prod-name').value = '';
     document.getElementById('prod-unit').value = '';
     document.getElementById('prod-notes').value = '';
 }
 
 // ============ PRICE COMPARISON ============
-document.getElementById('compare-product-select').addEventListener('change', function() {
-    const productId = this.value;
+function comparePrices() {
+    const productId = document.getElementById('compare-product-select').value;
     if (!productId) { document.getElementById('compare-results').innerHTML = '<div class="empty-state"><i class="fas fa-balance-scale"></i><p>Select a product to compare prices</p></div>'; return; }
-    const items = invoiceItems.filter(it => it.productId === productId);
+    const items = appData.invoiceItems.filter(it => it.productId === productId);
     if (!items.length) { document.getElementById('compare-results').innerHTML = '<div class="empty-state"><p>No purchase history for this product</p></div>'; return; }
+    
     const grouped = {};
     items.forEach(item => {
-        const inv = invoices.find(i => i.id === item.invoiceId);
+        const inv = appData.invoices.find(i => i.id === item.invoiceId);
         const supName = inv ? inv.supplierName : 'Unknown';
         if (!grouped[supName]) grouped[supName] = [];
         grouped[supName].push({ price: item.unitPrice, date: inv ? inv.purchaseDate : '', quantity: item.quantity, unit: item.unit });
     });
-    let html = `<h4 class="font-bold text-lg mb-3">${products.find(p=>p.id===productId)?.name || 'Product'} Price Comparison</h4><div class="table-wrap"><table><thead><tr><th>Supplier</th><th>Qty</th><th>Price</th><th>Last Purchased</th></tr></thead><tbody>`;
+    
+    let html = `<h4 class="font-bold text-lg mb-3">${appData.products.find(p=>p.id===productId)?.name || 'Product'} Price Comparison</h4><div class="table-wrap"><table><thead><tr><th>Supplier</th><th>Qty</th><th>Price</th><th>Last Purchased</th></tr></thead><tbody>`;
     let prices = [];
     Object.entries(grouped).forEach(([sup, entries]) => {
         const latest = entries.sort((a,b) => new Date(b.date) - new Date(a.date))[0];
@@ -705,6 +659,7 @@ document.getElementById('compare-product-select').addEventListener('change', fun
         html += `<tr><td class="font-medium">${sup}</td><td>${latest.quantity} ${latest.unit}</td><td>£${latest.price.toFixed(2)}</td><td>${formatDate(latest.date)}</td></tr>`;
     });
     html += '</tbody></table></div>';
+    
     if (prices.length > 1) {
         const sorted = prices.sort((a,b) => a.price - b.price);
         const cheapest = sorted[0];
@@ -712,40 +667,115 @@ document.getElementById('compare-product-select').addEventListener('change', fun
         const avg = prices.reduce((s,p) => s + p.price, 0) / prices.length;
         const diff = mostExp.price - cheapest.price;
         html += `<div class="mt-4 p-4 bg-green-50 rounded-xl"><span class="font-bold text-green-700">BEST PRICE: ${cheapest.sup} — £${cheapest.price.toFixed(2)}</span>`;
-        html += `<div class="text-sm text-gray-600">Most expensive: ${mostExp.sup} — £${mostExp.price.toFixed(2)}<br>Average: £${avg.toFixed(2)} · Difference: £${diff.toFixed(2)} (${((diff/avg)*100).toFixed(1)}%)</div></div>`;
+        html += `<div class="text-sm text-gray-600 mt-1">Most expensive: ${mostExp.sup} — £${mostExp.price.toFixed(2)}<br>Average: £${avg.toFixed(2)} · Difference: £${diff.toFixed(2)} (${((diff/avg)*100).toFixed(1)}%)</div></div>`;
     }
     document.getElementById('compare-results').innerHTML = html;
-});
+}
+
+// ============ PURCHASES ============
+function filterPurchases(filter, btn) {
+    currentFilter = filter;
+    document.querySelectorAll('#page-purchases .tab').forEach(t => t.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    renderPurchases();
+}
+
+function renderPurchases() {
+    const search = document.getElementById('purchase-search').value.toLowerCase();
+    const supplier = document.getElementById('purchase-supplier-filter').value;
+    let filtered = [...appData.invoices];
+    
+    if (currentFilter === 'today') { 
+        const d = new Date().toISOString().split('T')[0]; 
+        filtered = filtered.filter(inv => inv.purchaseDate === d); 
+    } else if (currentFilter === 'week') { 
+        const d = new Date(); d.setDate(d.getDate() - 7); 
+        const s = d.toISOString().split('T')[0]; 
+        filtered = filtered.filter(inv => inv.purchaseDate >= s); 
+    } else if (currentFilter === 'month') { 
+        const d = new Date(); d.setMonth(d.getMonth() - 1); 
+        const s = d.toISOString().split('T')[0]; 
+        filtered = filtered.filter(inv => inv.purchaseDate >= s); 
+    }
+    
+    if (search) filtered = filtered.filter(inv => 
+        inv.invoiceNumber.toLowerCase().includes(search) || 
+        (inv.supplierName || '').toLowerCase().includes(search)
+    );
+    if (supplier) filtered = filtered.filter(inv => inv.supplierId === supplier);
+    filtered.sort((a,b) => new Date(b.purchaseDate) - new Date(a.purchaseDate));
+
+    const tbody = document.getElementById('purchase-table');
+    if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-400 py-8">No invoices found</td></tr>'; return; }
+    tbody.innerHTML = filtered.map(inv => {
+        const items = appData.invoiceItems.filter(it => it.invoiceId === inv.id);
+        return `<tr>
+            <td>${formatDate(inv.purchaseDate)}</td>
+            <td class="font-medium">${inv.invoiceNumber}</td>
+            <td>${inv.supplierName || 'Unknown'}</td>
+            <td>${items.length}</td>
+            <td>£${inv.total.toFixed(2)}</td>
+            <td>
+                <button class="text-blue-600 text-sm mr-2" onclick="viewInvoice('${inv.id}')"><i class="fas fa-eye"></i></button>
+                <button class="text-red-600 text-sm" onclick="deleteInvoice('${inv.id}')"><i class="fas fa-trash"></i></button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function viewInvoice(id) {
+    const inv = appData.invoices.find(i => i.id === id);
+    if (!inv) return;
+    const items = appData.invoiceItems.filter(it => it.invoiceId === id);
+    let msg = `Invoice: ${inv.invoiceNumber}\nSupplier: ${inv.supplierName || 'Unknown'}\nDate: ${formatDate(inv.purchaseDate)}\nTotal: £${inv.total.toFixed(2)}\nItems:\n`;
+    items.forEach(item => {
+        msg += `  ${item.productName} × ${item.quantity} ${item.unit} @ £${item.unitPrice.toFixed(2)} = £${item.total.toFixed(2)}\n`;
+    });
+    alert(msg);
+}
+
+function deleteInvoice(id) {
+    if (!confirm('Delete this invoice?')) return;
+    appData.invoices = appData.invoices.filter(i => i.id !== id);
+    appData.invoiceItems = appData.invoiceItems.filter(i => i.invoiceId !== id);
+    saveToStorage();
+    refreshAll();
+    renderPurchases();
+}
 
 // ============ ANALYTICS ============
-document.querySelectorAll('#page-analytics .tab').forEach(tab => {
-    tab.addEventListener('click', function() {
+function runAnalytics(period, btn) {
+    if (btn) {
         document.querySelectorAll('#page-analytics .tab').forEach(t => t.classList.remove('active'));
-        this.classList.add('active');
-        runAnalytics(this.dataset.period);
-    });
-});
-
-function runAnalytics(period) {
+        btn.classList.add('active');
+    }
     const now = new Date();
     let startDate = new Date();
-    if (period === 'today') { /* startDate is today */ }
+    if (period === 'today') { /* today */ }
     else if (period === 'week') { startDate.setDate(now.getDate() - 7); }
     else if (period === 'month') { startDate.setMonth(now.getMonth() - 1); }
     else if (period === 'quarter') { startDate.setMonth(now.getMonth() - 3); }
     else if (period === 'year') { startDate.setFullYear(now.getFullYear() - 1); }
     const startStr = startDate.toISOString().split('T')[0];
-    const filtered = invoices.filter(inv => inv.purchaseDate >= startStr);
+    const filtered = appData.invoices.filter(inv => inv.purchaseDate >= startStr);
     const total = filtered.reduce((s, inv) => s + inv.total, 0);
-    const avgDaily = total / (filtered.length || 1);
-    const avgInv = filtered.length ? total / filtered.length : 0;
+    const avgDaily = filtered.length ? total / filtered.length : 0;
 
-    // Supplier breakdown
     const supBreak = {};
     filtered.forEach(inv => { const name = inv.supplierName || 'Unknown'; supBreak[name] = (supBreak[name] || 0) + inv.total; });
 
-    let html = `<div class="card p-4"><h4 class="font-bold">Total Spending: £${total.toFixed(2)}</h4><p class="text-sm text-gray-500">${filtered.length} invoices · Avg daily: £${avgDaily.toFixed(2)} · Avg invoice: £${avgInv.toFixed(2)}</p></div>`;
-    html += `<div class="card p-4"><h4 class="font-semibold mb-2">Supplier Breakdown</h4>${Object.entries(supBreak).sort((a,b)=>b[1]-a[1]).map(([name, amt]) => `<div class="flex justify-between py-1 border-b"><span>${name}</span><span>£${amt.toFixed(2)} (${((amt/total)*100).toFixed(1)}%)</span></div>`).join('')}</div>`;
+    let html = `<div class="card p-4"><h4 class="font-bold text-lg">Total Spending: £${total.toFixed(2)}</h4><p class="text-sm text-gray-500">${filtered.length} invoices · Average per invoice: £${(filtered.length ? total/filtered.length : 0).toFixed(2)}</p></div>`;
+    html += `<div class="card p-4"><h4 class="font-semibold mb-2">Supplier Breakdown</h4>`;
+    const entries = Object.entries(supBreak).sort((a,b)=>b[1]-a[1]);
+    if (entries.length) {
+        entries.forEach(([name, amt]) => {
+            const pct = total ? ((amt/total)*100).toFixed(1) : 0;
+            html += `<div class="flex justify-between py-1 border-b"><span>${name}</span><span>£${amt.toFixed(2)} (${pct}%)</span></div>`;
+        });
+    } else {
+        html += '<div class="text-gray-400">No data for this period</div>';
+    }
+    html += '</div>';
     document.getElementById('analytics-content').innerHTML = html;
 }
 
@@ -753,53 +783,26 @@ function runAnalytics(period) {
 function generateReport(type) {
     if (type === 'csv') {
         let csv = 'Date,Invoice,Supplier,Total\n';
-        invoices.forEach(inv => { csv += `${inv.purchaseDate},${inv.invoiceNumber},${inv.supplierName || ''},${inv.total.toFixed(2)}\n`; });
+        appData.invoices.forEach(inv => { csv += `${inv.purchaseDate},${inv.invoiceNumber},${inv.supplierName || ''},${inv.total.toFixed(2)}\n`; });
         const blob = new Blob([csv], { type: 'text/csv' });
         const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'purchase-report.csv'; link.click();
     } else {
-        alert('PDF download would be generated here. For now, use Print or CSV export.');
+        alert('PDF report would be generated here. For now, use Print or CSV export.');
     }
-}
-
-// ============ PURCHASES TABLE ============
-function renderPurchases(filter = 'all', search = '', supplier = '') {
-    let filtered = [...invoices];
-    if (filter === 'today') { const d = new Date().toISOString().split('T')[0]; filtered = filtered.filter(inv => inv.purchaseDate === d); }
-    else if (filter === 'week') { const d = new Date(); d.setDate(d.getDate() - 7); const s = d.toISOString().split('T')[0]; filtered = filtered.filter(inv => inv.purchaseDate >= s); }
-    else if (filter === 'month') { const d = new Date(); d.setMonth(d.getMonth() - 1); const s = d.toISOString().split('T')[0]; filtered = filtered.filter(inv => inv.purchaseDate >= s); }
-    if (search) filtered = filtered.filter(inv => inv.invoiceNumber.includes(search) || (inv.supplierName || '').includes(search));
-    if (supplier) filtered = filtered.filter(inv => inv.supplierId === supplier);
-    filtered.sort((a,b) => new Date(b.purchaseDate) - new Date(a.purchaseDate));
-
-    const tbody = document.getElementById('purchase-table');
-    if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-400 py-8">No invoices found</td></tr>'; return; }
-    tbody.innerHTML = filtered.map(inv => {
-        const items = invoiceItems.filter(it => it.invoiceId === inv.id);
-        return `<tr><td>${formatDate(inv.purchaseDate)}</td><td class="font-medium">${inv.invoiceNumber}</td><td>${inv.supplierName || 'Unknown'}</td><td>${items.length}</td><td>£${inv.total.toFixed(2)}</td><td><button class="text-blue-600 text-sm" onclick="viewInvoice('${inv.id}')"><i class="fas fa-eye"></i></button></td></tr>`;
-    }).join('');
-}
-
-function viewInvoice(id) {
-    const inv = invoices.find(i => i.id === id);
-    if (!inv) return;
-    const items = invoiceItems.filter(it => it.invoiceId === id);
-    alert(`Invoice ${inv.invoiceNumber}\nSupplier: ${inv.supplierName || 'Unknown'}\nDate: ${formatDate(inv.purchaseDate)}\nTotal: £${inv.total.toFixed(2)}\nItems: ${items.length}\n\nView full details in the console.`);
-    console.log('Invoice:', inv, 'Items:', items);
 }
 
 // ============ NAVIGATION ============
 function showPage(page) {
-    document.querySelectorAll('.page-content').forEach(el => el.classList.add('hidden'));
-    document.getElementById(`page-${page}`).classList.remove('hidden');
+    document.querySelectorAll('.page-content').forEach(el => el.classList.remove('active'));
+    document.getElementById(`page-${page}`).classList.add('active');
     document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-    document.querySelector(`.nav-link[data-page="${page}"]`)?.classList.add('active');
+    document.querySelector(`.nav-link[onclick*="${page}"]`)?.classList.add('active');
     document.getElementById('page-title').textContent = page.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-    currentPage = page;
     if (page === 'dashboard') renderDashboard();
     if (page === 'purchases') renderPurchases();
     if (page === 'suppliers') renderSuppliers();
     if (page === 'products') renderProducts();
-    if (page === 'price-compare') populateSelects();
+    if (page === 'price-compare') { populateSelects(); comparePrices(); }
     if (page === 'analytics') runAnalytics('today');
     toggleSidebar(false);
 }
@@ -817,45 +820,8 @@ function formatDate(dateStr) {
     return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-function setupEventListeners() {
-    document.querySelectorAll('.nav-link').forEach(el => el.addEventListener('click', () => showPage(el.dataset.page)));
-    document.querySelectorAll('#page-purchases .tab').forEach(el => el.addEventListener('click', function() {
-        document.querySelectorAll('#page-purchases .tab').forEach(t => t.classList.remove('active'));
-        this.classList.add('active');
-        renderPurchases(this.dataset.filter, document.getElementById('purchase-search').value, document.getElementById('purchase-supplier-filter').value);
-    }));
-    document.getElementById('purchase-search').addEventListener('input', function() {
-        const active = document.querySelector('#page-purchases .tab.active');
-        renderPurchases(active?.dataset?.filter || 'all', this.value, document.getElementById('purchase-supplier-filter').value);
-    });
-    document.getElementById('purchase-supplier-filter').addEventListener('change', function() {
-        const active = document.querySelector('#page-purchases .tab.active');
-        renderPurchases(active?.dataset?.filter || 'all', document.getElementById('purchase-search').value, this.value);
-    });
-    document.getElementById('inv-discount').addEventListener('input', updateInvoiceTotals);
-    document.getElementById('inv-tax').addEventListener('input', updateInvoiceTotals);
-    // Close modals on overlay click
-    document.querySelectorAll('.modal-overlay').forEach(overlay => overlay.addEventListener('click', function(e) {
-        if (e.target === this) this.classList.remove('open');
-    }));
-}
-
-function clearAllData() {
-    if (confirm('Delete all demo data? This will not affect Firebase if configured.')) {
-        suppliers = [];
-        products = [];
-        invoices = [];
-        invoiceItems = [];
-        renderDashboard();
-        renderSuppliers();
-        renderProducts();
-        populateSelects();
-        alert('Data cleared.');
-    }
-}
-
 // ============ START ============
-init();
+document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>
