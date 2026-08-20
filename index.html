@@ -7,10 +7,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
     <style>
         * { box-sizing: border-box; }
-        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #f1f5f9; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
         .sidebar { transition: transform 0.3s ease; }
         .sidebar-mobile { transform: translateX(-100%); }
         .sidebar-mobile.open { transform: translateX(0); }
@@ -21,7 +20,7 @@
         .stat-card.purple { border-color: #8b5cf6; }
         .stat-card.orange { border-color: #f59e0b; }
         .btn-primary { background: #1e293b; color: white; padding: 8px 16px; border-radius: 8px; font-weight: 500; transition: all 0.2s; cursor: pointer; border: none; }
-        .btn-primary:hover { background: #0f172a; transform: translateY(-1px); }
+        .btn-primary:hover { background: #0f172a; }
         .btn-success { background: #22c55e; color: white; padding: 8px 16px; border-radius: 8px; font-weight: 500; transition: all 0.2s; cursor: pointer; border: none; }
         .btn-success:hover { background: #16a34a; }
         .btn-danger { background: #ef4444; color: white; padding: 8px 16px; border-radius: 8px; font-weight: 500; transition: all 0.2s; cursor: pointer; border: none; }
@@ -29,16 +28,13 @@
         .btn-outline { border: 1.5px solid #e2e8f0; background: white; padding: 8px 16px; border-radius: 8px; font-weight: 500; transition: all 0.2s; cursor: pointer; }
         .btn-outline:hover { border-color: #94a3b8; background: #f8fafc; }
         .input-field { width: 100%; padding: 8px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 14px; transition: border 0.2s; background: white; }
-        .input-field:focus { outline: none; border-color: #1e293b; box-shadow: 0 0 0 3px rgba(30,41,59,0.1); }
+        .input-field:focus { outline: none; border-color: #1e293b; }
         .table-wrap { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 14px; }
         th { text-align: left; padding: 10px 12px; background: #f8fafc; color: #334155; font-weight: 600; border-bottom: 2px solid #e2e8f0; }
         td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
         tr:hover td { background: #fafbfc; }
-        .badge { padding: 4px 12px; border-radius: 100px; font-size: 12px; font-weight: 500; }
-        .badge-green { background: #dcfce7; color: #166534; }
-        .badge-blue { background: #dbeafe; color: #1e40af; }
-        .tab { padding: 6px 14px; border-radius: 6px; font-weight: 500; cursor: pointer; transition: all 0.2s; border: none; background: transparent; }
+        .tab { padding: 6px 14px; border-radius: 6px; font-weight: 500; cursor: pointer; border: none; background: transparent; }
         .tab.active { background: #1e293b; color: white; }
         .tab:not(.active):hover { background: #f1f5f9; }
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; }
@@ -46,7 +42,6 @@
         .modal-box { background: white; border-radius: 20px; max-width: 700px; width: 95%; max-height: 90vh; overflow-y: auto; padding: 24px; }
         .invoice-item-row { display: grid; grid-template-columns: 2fr 0.8fr 0.8fr 1fr 1fr auto; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
         .invoice-item-row input, .invoice-item-row select { padding: 6px 10px; border: 1.5px solid #e2e8f0; border-radius: 6px; font-size: 13px; background: white; }
-        .invoice-item-row input:focus, .invoice-item-row select:focus { outline: none; border-color: #1e293b; }
         @media (max-width: 768px) {
             .invoice-item-row { grid-template-columns: 1fr 1fr; gap: 6px; }
         }
@@ -60,32 +55,21 @@
         .page-content { display: none; }
         .page-content.active { display: block; }
         .editing-badge { background: #fef3c7; color: #92400e; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
-        .sync-status { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 100px; font-size: 12px; }
-        .sync-status.synced { background: #dcfce7; color: #166534; }
-        .sync-status.syncing { background: #fef3c7; color: #92400e; }
-        .sync-status.error { background: #fee2e2; color: #991b1b; }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         .action-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
-        .action-buttons button { padding: 4px 8px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+        .action-buttons button { padding: 4px 8px; border-radius: 6px; border: none; cursor: pointer; font-size: 12px; transition: all 0.2s; }
         .action-buttons .edit-btn { background: #dbeafe; color: #1e40af; }
         .action-buttons .edit-btn:hover { background: #bfdbfe; }
         .action-buttons .view-btn { background: #dcfce7; color: #166534; }
         .action-buttons .view-btn:hover { background: #bbf7d0; }
         .action-buttons .delete-btn { background: #fee2e2; color: #991b1b; }
         .action-buttons .delete-btn:hover { background: #fecaca; }
+        .product-card, .supplier-card { position: relative; padding-right: 40px; }
+        .delete-icon { position: absolute; top: 8px; right: 8px; background: #fee2e2; color: #991b1b; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+        .delete-icon:hover { background: #fecaca; transform: scale(1.1); }
         .toast { position: fixed; bottom: 20px; right: 20px; background: #1e293b; color: white; padding: 12px 24px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 9999; display: none; animation: slideUp 0.3s ease; }
         .toast.success { background: #22c55e; }
         .toast.error { background: #ef4444; }
         @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .product-card { position: relative; }
-        .product-card .delete-product-btn { position: absolute; top: 8px; right: 8px; background: #fee2e2; color: #991b1b; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
-        .product-card .delete-product-btn:hover { background: #fecaca; transform: scale(1.1); }
-        .supplier-card { position: relative; }
-        .supplier-card .delete-supplier-btn { position: absolute; top: 8px; right: 8px; background: #fee2e2; color: #991b1b; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
-        .supplier-card .delete-supplier-btn:hover { background: #fecaca; transform: scale(1.1); }
     </style>
 </head>
 <body>
@@ -98,23 +82,20 @@
                 <i class="fas fa-utensils text-2xl text-[#1e293b]"></i>
                 <span class="font-bold text-lg text-[#1e293b]">RestoCost</span>
             </div>
-            <button onclick="window.toggleSidebar()" class="md:hidden text-gray-500"><i class="fas fa-times"></i></button>
+            <button onclick="toggleSidebar()" class="md:hidden text-gray-500"><i class="fas fa-times"></i></button>
         </div>
         <nav class="flex-1 space-y-1">
-            <div class="nav-link active" onclick="window.showPage('dashboard')"><i class="fas fa-chart-pie"></i> Dashboard</div>
-            <div class="nav-link" onclick="window.showPage('purchases')"><i class="fas fa-receipt"></i> Purchases</div>
-            <div class="nav-link" onclick="window.showPage('add-invoice')"><i class="fas fa-plus-circle"></i> Add Invoice</div>
-            <div class="nav-link" onclick="window.showPage('suppliers')"><i class="fas fa-truck"></i> Suppliers</div>
-            <div class="nav-link" onclick="window.showPage('products')"><i class="fas fa-box"></i> Products</div>
-            <div class="nav-link" onclick="window.showPage('price-compare')"><i class="fas fa-balance-scale"></i> Price Comparison</div>
-            <div class="nav-link" onclick="window.showPage('analytics')"><i class="fas fa-chart-line"></i> Analytics</div>
-            <div class="nav-link" onclick="window.showPage('reports')"><i class="fas fa-file-alt"></i> Reports</div>
+            <div class="nav-link active" onclick="showPage('dashboard')"><i class="fas fa-chart-pie"></i> Dashboard</div>
+            <div class="nav-link" onclick="showPage('purchases')"><i class="fas fa-receipt"></i> Purchases</div>
+            <div class="nav-link" onclick="showPage('add-invoice')"><i class="fas fa-plus-circle"></i> Add Invoice</div>
+            <div class="nav-link" onclick="showPage('suppliers')"><i class="fas fa-truck"></i> Suppliers</div>
+            <div class="nav-link" onclick="showPage('products')"><i class="fas fa-box"></i> Products</div>
+            <div class="nav-link" onclick="showPage('price-compare')"><i class="fas fa-balance-scale"></i> Price Comparison</div>
+            <div class="nav-link" onclick="showPage('analytics')"><i class="fas fa-chart-line"></i> Analytics</div>
+            <div class="nav-link" onclick="showPage('reports')"><i class="fas fa-file-alt"></i> Reports</div>
         </nav>
         <div class="text-xs text-gray-400 mt-4 border-t pt-4">
-            <div class="flex items-center justify-between">
-                <span><i class="fas fa-fire mr-1"></i> Firebase</span>
-                <span id="sync-status" class="sync-status synced"><i class="fas fa-check-circle"></i> Synced</span>
-            </div>
+            <span><i class="fas fa-database mr-1"></i> Local Storage</span>
         </div>
     </aside>
 
@@ -123,12 +104,12 @@
         <!-- Top bar -->
         <div class="flex items-center justify-between mb-6">
             <div class="flex items-center gap-4">
-                <button onclick="window.toggleSidebar()" class="md:hidden text-gray-600 text-xl"><i class="fas fa-bars"></i></button>
+                <button onclick="toggleSidebar()" class="md:hidden text-gray-600 text-xl"><i class="fas fa-bars"></i></button>
                 <h1 id="page-title" class="text-2xl font-bold text-[#1e293b]">Dashboard</h1>
             </div>
             <div class="flex items-center gap-3">
                 <span class="text-sm text-gray-500 hidden sm:inline">Today: <span id="today-date"></span></span>
-                <button onclick="window.showPage('add-invoice')" class="btn-primary text-sm"><i class="fas fa-plus mr-1"></i> Add Invoice</button>
+                <button onclick="showPage('add-invoice')" class="btn-primary text-sm"><i class="fas fa-plus mr-1"></i> Add Invoice</button>
             </div>
         </div>
 
@@ -161,14 +142,14 @@
         <div id="page-purchases" class="page-content">
             <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
                 <div class="flex flex-wrap gap-2">
-                    <button class="tab active" onclick="window.filterPurchases('all', this)">All</button>
-                    <button class="tab" onclick="window.filterPurchases('today', this)">Today</button>
-                    <button class="tab" onclick="window.filterPurchases('week', this)">This Week</button>
-                    <button class="tab" onclick="window.filterPurchases('month', this)">This Month</button>
+                    <button class="tab active" onclick="filterPurchases('all', this)">All</button>
+                    <button class="tab" onclick="filterPurchases('today', this)">Today</button>
+                    <button class="tab" onclick="filterPurchases('week', this)">This Week</button>
+                    <button class="tab" onclick="filterPurchases('month', this)">This Month</button>
                 </div>
                 <div class="flex gap-2 flex-wrap">
-                    <input id="purchase-search" placeholder="Search..." class="input-field w-48 text-sm" oninput="window.renderPurchases()" />
-                    <select id="purchase-supplier-filter" class="input-field w-32 text-sm" onchange="window.renderPurchases()"><option value="">All Suppliers</option></select>
+                    <input id="purchase-search" placeholder="Search..." class="input-field w-48 text-sm" oninput="renderPurchases()" />
+                    <select id="purchase-supplier-filter" class="input-field w-32 text-sm" onchange="renderPurchases()"><option value="">All Suppliers</option></select>
                 </div>
             </div>
             <div class="card p-0 overflow-hidden">
@@ -189,7 +170,7 @@
                     <div><label class="block text-sm font-medium mb-1">Purchase Date</label><input id="inv-date" class="input-field" type="date" /></div>
                     <div><label class="block text-sm font-medium mb-1">Supplier</label>
                         <select id="inv-supplier" class="input-field"><option value="">Select supplier</option></select>
-                        <button onclick="window.openSupplierModal()" class="text-sm text-blue-600 mt-1"><i class="fas fa-plus"></i> Add new supplier</button>
+                        <button onclick="openSupplierModal()" class="text-sm text-blue-600 mt-1"><i class="fas fa-plus"></i> Add new supplier</button>
                     </div>
                     <div><label class="block text-sm font-medium mb-1">Supplier Invoice Ref</label><input id="inv-ref" class="input-field" placeholder="Optional ref" /></div>
                 </div>
@@ -197,39 +178,39 @@
                 
                 <h4 class="font-semibold mt-4 mb-2">Invoice Items</h4>
                 <div id="invoice-items-container" class="space-y-2"></div>
-                <button onclick="window.addItemRow()" class="btn-outline text-sm mt-2"><i class="fas fa-plus"></i> Add Item</button>
+                <button onclick="addItemRow()" class="btn-outline text-sm mt-2"><i class="fas fa-plus"></i> Add Item</button>
                 
                 <div class="mt-4 p-4 bg-gray-50 rounded-xl">
                     <div class="flex justify-between"><span>Subtotal:</span><span id="inv-subtotal">£0.00</span></div>
-                    <div class="flex justify-between"><span>Discount:</span><span><input id="inv-discount" class="input-field w-24 inline" type="number" step="0.01" placeholder="0" oninput="window.updateInvoiceTotals()" /> £</span></div>
-                    <div class="flex justify-between"><span>Tax:</span><span><input id="inv-tax" class="input-field w-24 inline" type="number" step="0.01" placeholder="0" oninput="window.updateInvoiceTotals()" /> £</span></div>
+                    <div class="flex justify-between"><span>Discount:</span><span><input id="inv-discount" class="input-field w-24 inline" type="number" step="0.01" placeholder="0" oninput="updateInvoiceTotals()" /> £</span></div>
+                    <div class="flex justify-between"><span>Tax:</span><span><input id="inv-tax" class="input-field w-24 inline" type="number" step="0.01" placeholder="0" oninput="updateInvoiceTotals()" /> £</span></div>
                     <div class="flex justify-between font-bold text-lg"><span>Grand Total:</span><span id="inv-grand-total">£0.00</span></div>
                 </div>
                 
                 <div class="flex flex-wrap gap-3 mt-4">
-                    <button onclick="window.saveInvoice()" class="btn-primary"><i class="fas fa-save"></i> <span id="save-btn-text">Save Invoice</span></button>
-                    <button onclick="window.cancelEdit()" id="cancel-edit-btn" class="btn-outline hidden"><i class="fas fa-times"></i> Cancel Edit</button>
-                    <button onclick="window.resetInvoiceForm()" class="btn-outline"><i class="fas fa-undo"></i> Reset</button>
+                    <button onclick="saveInvoice()" class="btn-primary"><i class="fas fa-save"></i> <span id="save-btn-text">Save Invoice</span></button>
+                    <button onclick="cancelEdit()" id="cancel-edit-btn" class="btn-outline hidden"><i class="fas fa-times"></i> Cancel Edit</button>
+                    <button onclick="resetInvoiceForm()" class="btn-outline"><i class="fas fa-undo"></i> Reset</button>
                 </div>
             </div>
         </div>
 
         <!-- Suppliers -->
         <div id="page-suppliers" class="page-content">
-            <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold">Suppliers</h2><button onclick="window.openSupplierModal()" class="btn-primary text-sm"><i class="fas fa-plus"></i> Add Supplier</button></div>
+            <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold">Suppliers</h2><button onclick="openSupplierModal()" class="btn-primary text-sm"><i class="fas fa-plus"></i> Add Supplier</button></div>
             <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4" id="supplier-grid"></div>
         </div>
 
         <!-- Products -->
         <div id="page-products" class="page-content">
-            <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold">Products</h2><button onclick="window.openProductModal()" class="btn-primary text-sm"><i class="fas fa-plus"></i> Add Product</button></div>
+            <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold">Products</h2><button onclick="openProductModal()" class="btn-primary text-sm"><i class="fas fa-plus"></i> Add Product</button></div>
             <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4" id="product-grid"></div>
         </div>
 
         <!-- Price Comparison -->
         <div id="page-price-compare" class="page-content">
             <h2 class="text-xl font-bold mb-4">Price Comparison</h2>
-            <div class="mb-4"><select id="compare-product-select" class="input-field w-64" onchange="window.comparePrices()"><option value="">Select a product</option></select></div>
+            <div class="mb-4"><select id="compare-product-select" class="input-field w-64" onchange="comparePrices()"><option value="">Select a product</option></select></div>
             <div id="compare-results" class="card p-4"></div>
         </div>
 
@@ -237,11 +218,11 @@
         <div id="page-analytics" class="page-content">
             <h2 class="text-xl font-bold mb-4">Analytics</h2>
             <div class="flex flex-wrap gap-2 mb-4">
-                <button class="tab active" onclick="window.runAnalytics('today', this)">Today</button>
-                <button class="tab" onclick="window.runAnalytics('week', this)">This Week</button>
-                <button class="tab" onclick="window.runAnalytics('month', this)">This Month</button>
-                <button class="tab" onclick="window.runAnalytics('quarter', this)">Last 3 Months</button>
-                <button class="tab" onclick="window.runAnalytics('year', this)">This Year</button>
+                <button class="tab active" onclick="runAnalytics('today', this)">Today</button>
+                <button class="tab" onclick="runAnalytics('week', this)">This Week</button>
+                <button class="tab" onclick="runAnalytics('month', this)">This Month</button>
+                <button class="tab" onclick="runAnalytics('quarter', this)">Last 3 Months</button>
+                <button class="tab" onclick="runAnalytics('year', this)">This Year</button>
             </div>
             <div id="analytics-content" class="grid md:grid-cols-2 gap-4"></div>
         </div>
@@ -250,8 +231,8 @@
         <div id="page-reports" class="page-content">
             <h2 class="text-xl font-bold mb-4">Reports</h2>
             <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div class="card p-4 text-center"><i class="fas fa-file-pdf text-3xl text-red-500 mb-2 block"></i><button onclick="window.generateReport('pdf')" class="btn-primary text-sm">Download PDF</button></div>
-                <div class="card p-4 text-center"><i class="fas fa-file-excel text-3xl text-green-600 mb-2 block"></i><button onclick="window.generateReport('csv')" class="btn-primary text-sm">Export CSV</button></div>
+                <div class="card p-4 text-center"><i class="fas fa-file-pdf text-3xl text-red-500 mb-2 block"></i><button onclick="generateReport('pdf')" class="btn-primary text-sm">Download PDF</button></div>
+                <div class="card p-4 text-center"><i class="fas fa-file-excel text-3xl text-green-600 mb-2 block"></i><button onclick="generateReport('csv')" class="btn-primary text-sm">Export CSV</button></div>
                 <div class="card p-4 text-center"><i class="fas fa-print text-3xl text-gray-600 mb-2 block"></i><button onclick="window.print()" class="btn-primary text-sm">Print</button></div>
             </div>
         </div>
@@ -261,38 +242,20 @@
 <!-- Supplier Modal -->
 <div id="supplierModal" class="modal-overlay"><div class="modal-box"><h3 class="text-xl font-bold mb-4">Add Supplier</h3>
     <div class="space-y-3"><input id="sup-name" class="input-field" placeholder="Supplier Name *" /><input id="sup-contact" class="input-field" placeholder="Contact Person" /><input id="sup-phone" class="input-field" placeholder="Phone" /><input id="sup-email" class="input-field" placeholder="Email" /><input id="sup-address" class="input-field" placeholder="Address" /><input id="sup-notes" class="input-field" placeholder="Notes" /></div>
-    <div class="flex gap-3 mt-4"><button onclick="window.saveSupplier()" class="btn-primary">Save</button><button onclick="window.closeModal('supplierModal')" class="btn-outline">Cancel</button></div>
+    <div class="flex gap-3 mt-4"><button onclick="saveSupplier()" class="btn-primary">Save</button><button onclick="closeModal('supplierModal')" class="btn-outline">Cancel</button></div>
 </div></div>
 
 <!-- Product Modal -->
 <div id="productModal" class="modal-overlay"><div class="modal-box"><h3 class="text-xl font-bold mb-4">Add Product</h3>
     <div class="space-y-3"><input id="prod-name" class="input-field" placeholder="Product Name *" /><select id="prod-category" class="input-field"><option value="Vegetables">Vegetables</option><option value="Fruits">Fruits</option><option value="Meat">Meat</option><option value="Dairy">Dairy</option><option value="Dry Goods">Dry Goods</option><option value="Frozen">Frozen</option><option value="Drinks">Drinks</option><option value="Cleaning">Cleaning</option><option value="Other">Other</option></select><input id="prod-unit" class="input-field" placeholder="Unit (e.g. Box, kg)" /><input id="prod-notes" class="input-field" placeholder="Notes" /></div>
-    <div class="flex gap-3 mt-4"><button onclick="window.saveProduct()" class="btn-primary">Save</button><button onclick="window.closeModal('productModal')" class="btn-outline">Cancel</button></div>
+    <div class="flex gap-3 mt-4"><button onclick="saveProduct()" class="btn-primary">Save</button><button onclick="closeModal('productModal')" class="btn-outline">Cancel</button></div>
 </div></div>
 
-<!-- Toast Notification -->
+<!-- Toast -->
 <div id="toast" class="toast"></div>
 
 <script>
-// ============ FIREBASE SETUP ============
-const firebaseConfig = {
-    apiKey: "AIzaSyAwegncbGVk-qr_dGWuTXU_Wq0CnG_7elk",
-    authDomain: "restaurant-grocery-management.firebaseapp.com",
-    projectId: "restaurant-grocery-management",
-    storageBucket: "restaurant-grocery-management.firebasestorage.app",
-    messagingSenderId: "506737153584",
-    appId: "1:506737153584:web:6f7b7d1d73f7b3ed96bff5",
-    measurementId: "G-NX1MC2EVWJ"
-};
-
-// Initialize Firebase
-if (typeof firebase !== 'undefined' && firebase.apps.length === 0) {
-    firebase.initializeApp(firebaseConfig);
-    window.db = firebase.firestore();
-    console.log('🔥 Firebase initialized!');
-}
-
-// ============ DATA STORE ============
+// ============ DATA ============
 let appData = {
     suppliers: [],
     products: [],
@@ -305,83 +268,24 @@ let currentFilter = 'all';
 let editingInvoiceId = null;
 
 // ============ TOAST ============
-function showToast(message, type = 'success') {
-    const toast = document.getElementById('toast');
-    toast.textContent = message;
-    toast.className = `toast ${type}`;
-    toast.style.display = 'block';
-    setTimeout(() => {
-        toast.style.display = 'none';
-    }, 3000);
-}
-
-// ============ SYNC STATUS ============
-function setSyncStatus(status, message = '') {
-    const el = document.getElementById('sync-status');
-    el.className = `sync-status ${status}`;
-    const icons = {
-        synced: '<i class="fas fa-check-circle"></i>',
-        syncing: '<i class="fas fa-spinner fa-spin"></i>',
-        error: '<i class="fas fa-exclamation-circle"></i>'
-    };
-    const labels = {
-        synced: 'Synced',
-        syncing: 'Syncing...',
-        error: 'Error'
-    };
-    el.innerHTML = `${icons[status] || ''} ${labels[status] || ''} ${message}`;
-}
-
-// ============ LOAD DATA ============
-async function loadDataFromFirebase() {
-    try {
-        setSyncStatus('syncing');
-        
-        if (window.db) {
-            const suppliersSnapshot = await window.db.collection('suppliers').get();
-            appData.suppliers = suppliersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            
-            const productsSnapshot = await window.db.collection('products').get();
-            appData.products = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            
-            const invoicesSnapshot = await window.db.collection('invoices').orderBy('purchaseDate', 'desc').get();
-            appData.invoices = invoicesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            
-            const itemsSnapshot = await window.db.collection('invoiceItems').get();
-            appData.invoiceItems = itemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            
-            setSyncStatus('synced', `(${appData.invoices.length} invoices)`);
-        } else {
-            loadFromStorage();
-            if (appData.suppliers.length === 0) loadDemoData();
-            setSyncStatus('error', 'Using local data');
-        }
-        refreshAll();
-        
-    } catch (error) {
-        console.error('Error loading:', error);
-        setSyncStatus('error', 'Using local data');
-        loadFromStorage();
-        if (appData.suppliers.length === 0) loadDemoData();
-        refreshAll();
-    }
+function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `toast ${type}`;
+    t.style.display = 'block';
+    setTimeout(() => t.style.display = 'none', 3000);
 }
 
 // ============ LOCAL STORAGE ============
-function saveToStorage() {
-    try {
-        localStorage.setItem('restaurantData', JSON.stringify(appData));
-    } catch(e) { console.warn('Could not save to localStorage'); }
+function saveData() {
+    try { localStorage.setItem('restaurantData', JSON.stringify(appData)); } catch(e) {}
 }
 
-function loadFromStorage() {
+function loadData() {
     try {
-        const data = localStorage.getItem('restaurantData');
-        if (data) {
-            const parsed = JSON.parse(data);
-            appData = parsed;
-        }
-    } catch(e) { console.warn('Could not load from localStorage'); }
+        const d = localStorage.getItem('restaurantData');
+        if (d) { appData = JSON.parse(d); }
+    } catch(e) {}
 }
 
 // ============ DEMO DATA ============
@@ -457,41 +361,17 @@ function loadDemoData() {
         });
         appData.invoiceItems.push(...items);
     }
-    saveToStorage();
+    saveData();
 }
 
-// ============ SAVE TO FIREBASE ============
-async function saveToFirebase(collectionName, data, id = null) {
-    try {
-        setSyncStatus('syncing');
-        if (window.db) {
-            if (id) {
-                await window.db.collection(collectionName).doc(id).set(data, { merge: true });
-                return id;
-            } else {
-                const docRef = await window.db.collection(collectionName).add(data);
-                return docRef.id;
-            }
-        }
-        return null;
-    } catch (error) {
-        console.error(`Error saving:`, error);
-        setSyncStatus('error', 'Check console');
-        throw error;
-    }
-}
-
-async function deleteFromFirebase(collectionName, id) {
-    try {
-        setSyncStatus('syncing');
-        if (window.db) {
-            await window.db.collection(collectionName).doc(id).delete();
-        }
-    } catch (error) {
-        console.error(`Error deleting:`, error);
-        setSyncStatus('error', 'Check console');
-        throw error;
-    }
+// ============ INIT ============
+function init() {
+    loadData();
+    if (appData.suppliers.length === 0) loadDemoData();
+    document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    document.getElementById('inv-date').value = new Date().toISOString().split('T')[0];
+    refreshAll();
+    addItemRow();
 }
 
 // ============ REFRESH ALL ============
@@ -571,7 +451,7 @@ function renderSuppliers() {
     grid.innerHTML = appData.suppliers.map(s => {
         const spent = appData.invoices.filter(inv => inv.supplierId === s.id).reduce((sum, inv) => sum + inv.total, 0);
         return `<div class="card p-4 supplier-card">
-            <button onclick="window.deleteSupplier('${s.id}')" class="delete-supplier-btn" title="Delete Supplier"><i class="fas fa-trash"></i></button>
+            <button onclick="deleteSupplier('${s.id}')" class="delete-icon" title="Delete"><i class="fas fa-trash"></i></button>
             <div class="font-bold">${s.name}</div>
             <div class="text-sm text-gray-500">${s.contactPerson || ''}</div>
             <div class="text-sm text-gray-500">${s.phone || ''}</div>
@@ -581,28 +461,15 @@ function renderSuppliers() {
 }
 
 // ============ DELETE SUPPLIER ============
-async function deleteSupplier(id) {
-    if (!confirm('Delete this supplier? This will also delete all associated invoices.')) return;
-    try {
-        await deleteFromFirebase('suppliers', id);
-        const invs = appData.invoices.filter(inv => inv.supplierId === id);
-        for (const inv of invs) {
-            await deleteFromFirebase('invoices', inv.id);
-            const items = appData.invoiceItems.filter(item => item.invoiceId === inv.id);
-            for (const item of items) {
-                if (item.id) await deleteFromFirebase('invoiceItems', item.id);
-            }
-        }
-    } catch (error) {
-        console.error('Delete failed:', error);
-    }
+function deleteSupplier(id) {
+    if (!confirm('Delete this supplier?')) return;
     appData.suppliers = appData.suppliers.filter(s => s.id !== id);
-    appData.invoices = appData.invoices.filter(inv => inv.supplierId !== id);
-    appData.invoiceItems = appData.invoiceItems.filter(item => {
-        const inv = appData.invoices.find(i => i.id === item.invoiceId);
-        return inv !== undefined;
+    const invs = appData.invoices.filter(inv => inv.supplierId === id);
+    invs.forEach(inv => {
+        appData.invoices = appData.invoices.filter(i => i.id !== inv.id);
+        appData.invoiceItems = appData.invoiceItems.filter(item => item.invoiceId !== inv.id);
     });
-    saveToStorage();
+    saveData();
     refreshAll();
     showToast('🗑️ Supplier deleted', 'success');
 }
@@ -618,7 +485,7 @@ function renderProducts() {
         const items = appData.invoiceItems.filter(it => it.productId === p.id);
         const lastPrice = items.length ? items.sort((a,b) => new Date(b.purchaseDate) - new Date(a.purchaseDate))[0] : null;
         return `<div class="card p-3 product-card">
-            <button onclick="window.deleteProduct('${p.id}')" class="delete-product-btn" title="Delete Product"><i class="fas fa-trash"></i></button>
+            <button onclick="deleteProduct('${p.id}')" class="delete-icon" title="Delete"><i class="fas fa-trash"></i></button>
             <div class="font-medium">${p.name}</div>
             <div class="text-sm text-gray-500">${p.category || ''} · ${p.unit || ''}</div>
             ${lastPrice ? `<div class="text-sm mt-1">Last: £${lastPrice.unitPrice.toFixed(2)}</div>` : '<div class="text-sm mt-1 text-gray-400">No purchases</div>'}
@@ -627,20 +494,11 @@ function renderProducts() {
 }
 
 // ============ DELETE PRODUCT ============
-async function deleteProduct(id) {
-    if (!confirm('Delete this product? This will also delete all associated invoice items.')) return;
-    try {
-        await deleteFromFirebase('products', id);
-        const items = appData.invoiceItems.filter(item => item.productId === id);
-        for (const item of items) {
-            if (item.id) await deleteFromFirebase('invoiceItems', item.id);
-        }
-    } catch (error) {
-        console.error('Delete failed:', error);
-    }
+function deleteProduct(id) {
+    if (!confirm('Delete this product?')) return;
     appData.products = appData.products.filter(p => p.id !== id);
     appData.invoiceItems = appData.invoiceItems.filter(item => item.productId !== id);
-    saveToStorage();
+    saveData();
     refreshAll();
     showToast('🗑️ Product deleted', 'success');
 }
@@ -664,14 +522,14 @@ function addItemRow(productId = '', qty = 1, unit = 'Box', price = '') {
     row.className = 'invoice-item-row';
     const prodOpts = appData.products.map(p => `<option value="${p.id}" ${p.id === productId ? 'selected' : ''}>${p.name}</option>`).join('');
     row.innerHTML = `
-        <select class="item-product" onchange="window.updateItemTotal(this.closest('.invoice-item-row'))">
+        <select class="item-product" onchange="updateItemTotal(this.closest('.invoice-item-row'))">
             <option value="">Product</option>${prodOpts}
         </select>
-        <input class="item-qty" type="number" placeholder="Qty" value="${qty}" oninput="window.updateItemTotal(this.closest('.invoice-item-row'))" />
-        <input class="item-unit" placeholder="Unit" value="${unit}" oninput="window.updateItemTotal(this.closest('.invoice-item-row'))" />
-        <input class="item-price" type="number" placeholder="Unit Price" step="0.01" value="${price}" oninput="window.updateItemTotal(this.closest('.invoice-item-row'))" />
+        <input class="item-qty" type="number" placeholder="Qty" value="${qty}" oninput="updateItemTotal(this.closest('.invoice-item-row'))" />
+        <input class="item-unit" placeholder="Unit" value="${unit}" oninput="updateItemTotal(this.closest('.invoice-item-row'))" />
+        <input class="item-price" type="number" placeholder="Unit Price" step="0.01" value="${price}" oninput="updateItemTotal(this.closest('.invoice-item-row'))" />
         <input class="item-total" type="text" placeholder="Total" readonly />
-        <button onclick="window.removeItemRow(this)" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
+        <button onclick="removeItemRow(this)" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
     `;
     container.appendChild(row);
     updateItemTotal(row);
@@ -710,10 +568,7 @@ function updateInvoiceTotals() {
 // ============ EDIT INVOICE ============
 function editInvoice(id) {
     const inv = appData.invoices.find(i => i.id === id);
-    if (!inv) { 
-        alert('Invoice not found'); 
-        return; 
-    }
+    if (!inv) { alert('Invoice not found'); return; }
     
     editingInvoiceId = id;
     document.getElementById('edit-invoice-id').value = id;
@@ -731,21 +586,12 @@ function editInvoice(id) {
     document.getElementById('inv-tax').value = inv.tax || 0;
     
     document.getElementById('invoice-items-container').innerHTML = '';
-    
     const items = appData.invoiceItems.filter(item => item.invoiceId === id);
-    if (items.length === 0) {
-        addItemRow();
-    } else {
-        items.forEach(item => {
-            addItemRow(item.productId, item.quantity, item.unit, item.unitPrice);
-        });
-    }
+    if (items.length === 0) { addItemRow(); } 
+    else { items.forEach(item => { addItemRow(item.productId, item.quantity, item.unit, item.unitPrice); }); }
     
     updateInvoiceTotals();
     showPage('add-invoice');
-    setTimeout(() => {
-        document.querySelector('#page-add-invoice .card').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
 }
 
 // ============ CANCEL EDIT ============
@@ -760,7 +606,7 @@ function cancelEdit() {
 }
 
 // ============ SAVE INVOICE ============
-async function saveInvoice() {
+function saveInvoice() {
     const supplierId = document.getElementById('inv-supplier').value;
     const date = document.getElementById('inv-date').value;
     const invNum = document.getElementById('inv-number').value || `INV-${String(appData.invoices.length+1).padStart(3,'0')}`;
@@ -815,61 +661,25 @@ async function saveInvoice() {
 
     const editId = document.getElementById('edit-invoice-id').value;
     
-    try {
-        if (editId) {
-            await saveToFirebase('invoices', invoiceData, editId);
-            const oldItems = appData.invoiceItems.filter(item => item.invoiceId === editId);
-            for (const item of oldItems) {
-                if (item.id) await deleteFromFirebase('invoiceItems', item.id);
-            }
-            for (const item of items) {
-                await saveToFirebase('invoiceItems', { ...item, invoiceId: editId });
-            }
-            const index = appData.invoices.findIndex(i => i.id === editId);
-            if (index !== -1) {
-                appData.invoices[index] = { id: editId, ...invoiceData };
-            }
-            appData.invoiceItems = appData.invoiceItems.filter(item => item.invoiceId !== editId);
-            appData.invoiceItems.push(...items.map(item => ({ ...item, invoiceId: editId, id: `item-${Date.now()}-${Math.random()}` })));
-            showToast('✅ Invoice updated successfully!', 'success');
-        } else {
-            const invId = await saveToFirebase('invoices', invoiceData);
-            for (const item of items) {
-                await saveToFirebase('invoiceItems', { ...item, invoiceId: invId });
-            }
-            const newInv = { id: invId, ...invoiceData };
-            appData.invoices.push(newInv);
-            appData.invoiceItems.push(...items.map(item => ({ ...item, invoiceId: invId, id: `item-${Date.now()}-${Math.random()}` })));
-            showToast('✅ Invoice saved successfully!', 'success');
+    if (editId) {
+        const index = appData.invoices.findIndex(i => i.id === editId);
+        if (index !== -1) {
+            appData.invoices[index] = { id: editId, ...invoiceData };
         }
-        
-        saveToStorage();
-        cancelEdit();
-        refreshAll();
-        renderPurchases();
-        setSyncStatus('synced', `(${appData.invoices.length} invoices)`);
-        
-    } catch (error) {
-        console.error('Save failed, using localStorage:', error);
-        if (editId) {
-            const index = appData.invoices.findIndex(i => i.id === editId);
-            if (index !== -1) {
-                appData.invoices[index] = { id: editId, ...invoiceData };
-            }
-            appData.invoiceItems = appData.invoiceItems.filter(item => item.invoiceId !== editId);
-            appData.invoiceItems.push(...items.map(item => ({ ...item, invoiceId: editId, id: `item-${Date.now()}-${Math.random()}` })));
-            showToast('✅ Invoice updated locally', 'success');
-        } else {
-            const newInv = { id: `inv-${Date.now()}`, ...invoiceData };
-            appData.invoices.push(newInv);
-            appData.invoiceItems.push(...items.map(item => ({ ...item, invoiceId: newInv.id, id: `item-${Date.now()}-${Math.random()}` })));
-            showToast('✅ Invoice saved locally', 'success');
-        }
-        saveToStorage();
-        cancelEdit();
-        refreshAll();
-        renderPurchases();
+        appData.invoiceItems = appData.invoiceItems.filter(item => item.invoiceId !== editId);
+        appData.invoiceItems.push(...items.map(item => ({ ...item, invoiceId: editId, id: `item-${Date.now()}-${Math.random()}` })));
+        showToast('✅ Invoice updated successfully!', 'success');
+    } else {
+        const newInv = { id: invNum, ...invoiceData };
+        appData.invoices.push(newInv);
+        appData.invoiceItems.push(...items.map(item => ({ ...item, invoiceId: invNum, id: `item-${Date.now()}-${Math.random()}` })));
+        showToast('✅ Invoice saved successfully!', 'success');
     }
+    
+    saveData();
+    cancelEdit();
+    refreshAll();
+    renderPurchases();
 }
 
 // ============ RESET INVOICE FORM ============
@@ -890,10 +700,11 @@ function resetInvoiceForm() {
 function openSupplierModal() { document.getElementById('supplierModal').classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
-async function saveSupplier() {
+function saveSupplier() {
     const name = document.getElementById('sup-name').value.trim();
     if (!name) { alert('Supplier name is required.'); return; }
     const data = { 
+        id: `sup-${Date.now()}`,
         name, 
         contactPerson: document.getElementById('sup-contact').value, 
         phone: document.getElementById('sup-phone').value, 
@@ -901,19 +712,11 @@ async function saveSupplier() {
         address: document.getElementById('sup-address').value, 
         notes: document.getElementById('sup-notes').value 
     };
-    try {
-        const id = await saveToFirebase('suppliers', data);
-        appData.suppliers.push({ id, ...data });
-        setSyncStatus('synced', `(${appData.suppliers.length} suppliers)`);
-        showToast('✅ Supplier added successfully!', 'success');
-    } catch (error) {
-        const id = `sup-${Date.now()}`;
-        appData.suppliers.push({ id, ...data });
-        showToast('✅ Supplier saved locally', 'success');
-    }
-    saveToStorage();
+    appData.suppliers.push(data);
+    saveData();
     closeModal('supplierModal');
     refreshAll();
+    showToast('✅ Supplier added successfully!', 'success');
     document.getElementById('sup-name').value = '';
     document.getElementById('sup-contact').value = '';
     document.getElementById('sup-phone').value = '';
@@ -923,60 +726,40 @@ async function saveSupplier() {
 }
 
 // ============ PRODUCT MODAL ============
-function openProductModal() { 
-    document.getElementById('productModal').classList.add('open'); 
-}
+function openProductModal() { document.getElementById('productModal').classList.add('open'); }
 
-async function saveProduct() {
+function saveProduct() {
     const name = document.getElementById('prod-name').value.trim();
-    if (!name) { 
-        alert('Product name is required.'); 
-        return; 
-    }
-    
+    if (!name) { alert('Product name is required.'); return; }
     const data = { 
-        name: name,
+        id: `prod-${Date.now()}`,
+        name, 
         category: document.getElementById('prod-category').value, 
         unit: document.getElementById('prod-unit').value, 
         notes: document.getElementById('prod-notes').value 
     };
-    
-    try {
-        let id;
-        if (window.db) {
-            const docRef = await window.db.collection('products').add(data);
-            id = docRef.id;
-        } else {
-            id = `prod-${Date.now()}`;
-        }
-        appData.products.push({ id, ...data });
-        saveToStorage();
-        closeModal('productModal');
-        refreshAll();
-        showToast('✅ Product added successfully!', 'success');
-        document.getElementById('prod-name').value = '';
-        document.getElementById('prod-unit').value = '';
-        document.getElementById('prod-notes').value = '';
-    } catch (error) {
-        console.error('Error saving product:', error);
-        const id = `prod-${Date.now()}`;
-        appData.products.push({ id, ...data });
-        saveToStorage();
-        closeModal('productModal');
-        refreshAll();
-        showToast('✅ Product saved locally', 'success');
-        document.getElementById('prod-name').value = '';
-        document.getElementById('prod-unit').value = '';
-        document.getElementById('prod-notes').value = '';
-    }
+    appData.products.push(data);
+    saveData();
+    closeModal('productModal');
+    refreshAll();
+    showToast('✅ Product added successfully!', 'success');
+    document.getElementById('prod-name').value = '';
+    document.getElementById('prod-unit').value = '';
+    document.getElementById('prod-notes').value = '';
 }
 
 // ============ PRICE COMPARISON ============
 function comparePrices() {
     const productId = document.getElementById('compare-product-select').value;
-    if (!productId) { document.getElementById('compare-results').innerHTML = '<div class="empty-state"><i class="fas fa-balance-scale"></i><p>Select a product to compare prices</p></div>'; return; }
+    if (!productId) { 
+        document.getElementById('compare-results').innerHTML = '<div class="empty-state"><i class="fas fa-balance-scale"></i><p>Select a product to compare prices</p></div>'; 
+        return; 
+    }
     const items = appData.invoiceItems.filter(it => it.productId === productId);
-    if (!items.length) { document.getElementById('compare-results').innerHTML = '<div class="empty-state"><p>No purchase history for this product</p></div>'; return; }
+    if (!items.length) { 
+        document.getElementById('compare-results').innerHTML = '<div class="empty-state"><p>No purchase history for this product</p></div>'; 
+        return; 
+    }
     
     const grouped = {};
     items.forEach(item => {
@@ -1055,13 +838,13 @@ function renderPurchases() {
             <td>£${inv.total.toFixed(2)}</td>
             <td>
                 <div class="action-buttons">
-                    <button class="edit-btn" onclick="window.editInvoice('${inv.id}')" title="Edit Invoice">
+                    <button class="edit-btn" onclick="editInvoice('${inv.id}')" title="Edit">
                         <i class="fas fa-edit"></i> Edit
                     </button>
-                    <button class="view-btn" onclick="window.viewInvoice('${inv.id}')" title="View Invoice">
+                    <button class="view-btn" onclick="viewInvoice('${inv.id}')" title="View">
                         <i class="fas fa-eye"></i> View
                     </button>
-                    <button class="delete-btn" onclick="window.deleteInvoice('${inv.id}')" title="Delete Invoice">
+                    <button class="delete-btn" onclick="deleteInvoice('${inv.id}')" title="Delete">
                         <i class="fas fa-trash"></i> Delete
                     </button>
                 </div>
@@ -1095,21 +878,11 @@ function viewInvoice(id) {
 }
 
 // ============ DELETE INVOICE ============
-async function deleteInvoice(id) {
+function deleteInvoice(id) {
     if (!confirm('Delete this invoice permanently?')) return;
-    try {
-        await deleteFromFirebase('invoices', id);
-        const items = appData.invoiceItems.filter(item => item.invoiceId === id);
-        for (const item of items) {
-            if (item.id) await deleteFromFirebase('invoiceItems', item.id);
-        }
-        setSyncStatus('synced', `(${appData.invoices.length - 1} invoices)`);
-    } catch (error) {
-        console.error('Firebase delete failed, using localStorage:', error);
-    }
     appData.invoices = appData.invoices.filter(i => i.id !== id);
     appData.invoiceItems = appData.invoiceItems.filter(i => i.invoiceId !== id);
-    saveToStorage();
+    saveData();
     refreshAll();
     renderPurchases();
     showToast('🗑️ Invoice deleted', 'success');
@@ -1192,46 +965,8 @@ function formatDate(dateStr) {
     return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-// ============ EXPOSE ALL FUNCTIONS ============
-window.addItemRow = addItemRow;
-window.removeItemRow = removeItemRow;
-window.updateItemTotal = updateItemTotal;
-window.updateInvoiceTotals = updateInvoiceTotals;
-window.resetInvoiceForm = resetInvoiceForm;
-window.saveInvoice = saveInvoice;
-window.editInvoice = editInvoice;
-window.cancelEdit = cancelEdit;
-window.saveSupplier = saveSupplier;
-window.deleteSupplier = deleteSupplier;
-window.saveProduct = saveProduct;
-window.deleteProduct = deleteProduct;
-window.openSupplierModal = openSupplierModal;
-window.openProductModal = openProductModal;
-window.closeModal = closeModal;
-window.comparePrices = comparePrices;
-window.filterPurchases = filterPurchases;
-window.renderPurchases = renderPurchases;
-window.viewInvoice = viewInvoice;
-window.deleteInvoice = deleteInvoice;
-window.runAnalytics = runAnalytics;
-window.generateReport = generateReport;
-window.showPage = showPage;
-window.toggleSidebar = toggleSidebar;
-window.refreshAll = refreshAll;
-
-console.log('✅ All functions exposed to window!');
-
 // ============ START ============
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-    document.getElementById('inv-date').value = new Date().toISOString().split('T')[0];
-    loadDataFromFirebase();
-    addItemRow();
-});
+document.addEventListener('DOMContentLoaded', init);
 </script>
-
-<!-- Firebase CDN -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </body>
 </html>
