@@ -7,6 +7,18 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Firebase v9 Modular SDK -->
+    <script type="importmap">
+    {
+        "imports": {
+            "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+            "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js",
+            "firebase/analytics": "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js"
+        }
+    }
+    </script>
+    
     <style>
         * { box-sizing: border-box; }
         body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #f1f5f9; }
@@ -25,6 +37,8 @@
         .btn-success:hover { background: #16a34a; }
         .btn-danger { background: #ef4444; color: white; padding: 8px 16px; border-radius: 8px; font-weight: 500; transition: all 0.2s; cursor: pointer; border: none; }
         .btn-danger:hover { background: #dc2626; }
+        .btn-warning { background: #f59e0b; color: white; padding: 8px 16px; border-radius: 8px; font-weight: 500; transition: all 0.2s; cursor: pointer; border: none; }
+        .btn-warning:hover { background: #d97706; }
         .btn-outline { border: 1.5px solid #e2e8f0; background: white; padding: 8px 16px; border-radius: 8px; font-weight: 500; transition: all 0.2s; cursor: pointer; }
         .btn-outline:hover { border-color: #94a3b8; background: #f8fafc; }
         .input-field { width: 100%; padding: 8px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 14px; transition: border 0.2s; background: white; }
@@ -50,7 +64,6 @@
             .invoice-item-row { grid-template-columns: 1fr 1fr; gap: 6px; }
         }
         .chart-container { height: 200px; }
-        .insight-card { background: #f1f5f9; border-radius: 12px; padding: 16px 20px; border-left: 4px solid #1e293b; }
         .nav-link { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 10px; color: #64748b; transition: all 0.2s; cursor: pointer; font-weight: 500; }
         .nav-link:hover { background: #f1f5f9; color: #0f172a; }
         .nav-link.active { background: #1e293b; color: white; }
@@ -59,13 +72,11 @@
         .empty-state i { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
         .page-content { display: none; }
         .page-content.active { display: block; }
-        .print-only { display: none; }
-        @media print {
-            .no-print { display: none; }
-            .print-only { display: block; }
-            .page-content { display: block !important; }
-            .modal-overlay { display: none !important; }
-        }
+        .editing-badge { background: #fef3c7; color: #92400e; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .sync-status { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 100px; font-size: 12px; }
+        .sync-status.synced { background: #dcfce7; color: #166534; }
+        .sync-status.syncing { background: #fef3c7; color: #92400e; }
+        .sync-status.error { background: #fee2e2; color: #991b1b; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -95,7 +106,10 @@
             <div class="nav-link" onclick="showPage('reports')"><i class="fas fa-file-alt"></i> Reports</div>
         </nav>
         <div class="text-xs text-gray-400 mt-4 border-t pt-4">
-            <i class="fas fa-database mr-1"></i> Local Storage
+            <div class="flex items-center justify-between">
+                <span><i class="fas fa-fire mr-1"></i> Firebase</span>
+                <span id="sync-status" class="sync-status synced"><i class="fas fa-check-circle"></i> Synced</span>
+            </div>
         </div>
     </aside>
 
@@ -160,7 +174,11 @@
         <!-- Add Invoice -->
         <div id="page-add-invoice" class="page-content">
             <div class="card p-4 md:p-6 max-w-4xl">
-                <h2 class="text-xl font-bold mb-4">Add New Invoice</h2>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold" id="invoice-form-title">Add New Invoice</h2>
+                    <span id="editing-badge" class="editing-badge hidden">Editing</span>
+                </div>
+                <input type="hidden" id="edit-invoice-id" value="" />
                 <div class="grid md:grid-cols-2 gap-4 mb-4">
                     <div><label class="block text-sm font-medium mb-1">Invoice Number</label><input id="inv-number" class="input-field" placeholder="INV-001" /></div>
                     <div><label class="block text-sm font-medium mb-1">Purchase Date</label><input id="inv-date" class="input-field" type="date" /></div>
@@ -184,7 +202,8 @@
                 </div>
                 
                 <div class="flex flex-wrap gap-3 mt-4">
-                    <button onclick="saveInvoice()" class="btn-primary"><i class="fas fa-save"></i> Save Invoice</button>
+                    <button onclick="saveInvoice()" class="btn-primary"><i class="fas fa-save"></i> <span id="save-btn-text">Save Invoice</span></button>
+                    <button onclick="cancelEdit()" id="cancel-edit-btn" class="btn-outline hidden"><i class="fas fa-times"></i> Cancel Edit</button>
                     <button onclick="resetInvoiceForm()" class="btn-outline"><i class="fas fa-undo"></i> Reset</button>
                 </div>
             </div>
@@ -246,7 +265,43 @@
     <div class="flex gap-3 mt-4"><button onclick="saveProduct()" class="btn-primary">Save</button><button onclick="closeModal('productModal')" class="btn-outline">Cancel</button></div>
 </div></div>
 
-<script>
+<script type="module">
+// ============ FIREBASE IMPORTS ============
+import { initializeApp } from "firebase/app";
+import { 
+    getFirestore, 
+    collection, 
+    addDoc, 
+    getDocs, 
+    updateDoc, 
+    deleteDoc, 
+    doc, 
+    query, 
+    orderBy,
+    onSnapshot,
+    setDoc,
+    getDoc
+} from "firebase/firestore";
+import { getAnalytics } from "firebase/analytics";
+
+// ============ FIREBASE CONFIG ============
+const firebaseConfig = {
+    apiKey: "AIzaSyAwegncbGVk-qr_dGWuTXU_Wq0CnG_7elk",
+    authDomain: "restaurant-grocery-management.firebaseapp.com",
+    projectId: "restaurant-grocery-management",
+    storageBucket: "restaurant-grocery-management.firebasestorage.app",
+    messagingSenderId: "506737153584",
+    appId: "1:506737153584:web:6f7b7d1d73f7b3ed96bff5",
+    measurementId: "G-NX1MC2EVWJ"
+};
+
+// ============ INIT FIREBASE ============
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const analytics = getAnalytics(app);
+
+console.log('🔥 Firebase initialized successfully!');
+
 // ============ DATA STORE ============
 let appData = {
     suppliers: [],
@@ -257,19 +312,74 @@ let appData = {
 
 let charts = { daily: null, supplier: null };
 let currentFilter = 'all';
+let editingInvoiceId = null;
+let isFirebaseReady = false;
 
-// ============ INIT ============
-function init() {
-    loadFromStorage();
-    if (appData.suppliers.length === 0) loadDemoData();
-    saveToStorage();
-    document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-    document.getElementById('inv-date').value = new Date().toISOString().split('T')[0];
-    refreshAll();
-    addItemRow();
+// ============ SYNC STATUS ============
+function setSyncStatus(status, message = '') {
+    const el = document.getElementById('sync-status');
+    el.className = `sync-status ${status}`;
+    const icons = {
+        synced: '<i class="fas fa-check-circle"></i>',
+        syncing: '<i class="fas fa-spinner fa-spin"></i>',
+        error: '<i class="fas fa-exclamation-circle"></i>'
+    };
+    const labels = {
+        synced: 'Synced',
+        syncing: 'Syncing...',
+        error: 'Error'
+    };
+    el.innerHTML = `${icons[status] || ''} ${labels[status] || ''} ${message}`;
 }
 
-// ============ LOCAL STORAGE ============
+// ============ LOAD DATA FROM FIREBASE ============
+async function loadDataFromFirebase() {
+    try {
+        setSyncStatus('syncing');
+        
+        // Load Suppliers
+        const suppliersSnapshot = await getDocs(collection(db, 'suppliers'));
+        appData.suppliers = suppliersSnapshot.docs.map(doc => ({ 
+            id: doc.id, 
+            ...doc.data() 
+        }));
+        
+        // Load Products
+        const productsSnapshot = await getDocs(collection(db, 'products'));
+        appData.products = productsSnapshot.docs.map(doc => ({ 
+            id: doc.id, 
+            ...doc.data() 
+        }));
+        
+        // Load Invoices
+        const invoicesSnapshot = await getDocs(query(collection(db, 'invoices'), orderBy('purchaseDate', 'desc')));
+        appData.invoices = invoicesSnapshot.docs.map(doc => ({ 
+            id: doc.id, 
+            ...doc.data() 
+        }));
+        
+        // Load Invoice Items
+        const itemsSnapshot = await getDocs(collection(db, 'invoiceItems'));
+        appData.invoiceItems = itemsSnapshot.docs.map(doc => ({ 
+            id: doc.id, 
+            ...doc.data() 
+        }));
+        
+        isFirebaseReady = true;
+        setSyncStatus('synced', `(${appData.invoices.length} invoices)`);
+        refreshAll();
+        
+    } catch (error) {
+        console.error('Error loading from Firebase:', error);
+        setSyncStatus('error', 'Using local data');
+        // Fallback to localStorage or demo data
+        loadFromStorage();
+        if (appData.suppliers.length === 0) loadDemoData();
+        refreshAll();
+    }
+}
+
+// ============ LOCAL STORAGE FALLBACK ============
 function saveToStorage() {
     try {
         localStorage.setItem('restaurantData', JSON.stringify(appData));
@@ -358,6 +468,38 @@ function loadDemoData() {
             createdAt: dateStr
         });
         appData.invoiceItems.push(...items);
+    }
+    saveToStorage();
+}
+
+// ============ SAVE TO FIREBASE ============
+async function saveToFirebase(collectionName, data, id = null) {
+    try {
+        setSyncStatus('syncing');
+        let docRef;
+        if (id) {
+            docRef = doc(db, collectionName, id);
+            await updateDoc(docRef, data);
+            return id;
+        } else {
+            docRef = await addDoc(collection(db, collectionName), data);
+            return docRef.id;
+        }
+    } catch (error) {
+        console.error(`Error saving to ${collectionName}:`, error);
+        setSyncStatus('error', 'Check console');
+        throw error;
+    }
+}
+
+async function deleteFromFirebase(collectionName, id) {
+    try {
+        setSyncStatus('syncing');
+        await deleteDoc(doc(db, collectionName, id));
+    } catch (error) {
+        console.error(`Error deleting from ${collectionName}:`, error);
+        setSyncStatus('error', 'Check console');
+        throw error;
     }
 }
 
@@ -478,6 +620,12 @@ function addItemRow(productId = '', qty = 1, unit = 'Box', price = '') {
     updateInvoiceTotals();
 }
 
+// Make functions available globally
+window.addItemRow = addItemRow;
+window.removeItemRow = removeItemRow;
+window.updateItemTotal = updateItemTotal;
+window.updateInvoiceTotals = updateInvoiceTotals;
+
 function removeItemRow(btn) {
     const container = document.getElementById('invoice-items-container');
     if (container.children.length <= 1) { alert('Invoice must have at least one item.'); return; }
@@ -507,12 +655,57 @@ function updateInvoiceTotals() {
     document.getElementById('inv-grand-total').textContent = `£${grand.toFixed(2)}`;
 }
 
+// ============ EDIT INVOICE ============
+window.editInvoice = function(id) {
+    const inv = appData.invoices.find(i => i.id === id);
+    if (!inv) { alert('Invoice not found'); return; }
+    
+    editingInvoiceId = id;
+    document.getElementById('edit-invoice-id').value = id;
+    document.getElementById('invoice-form-title').textContent = 'Edit Invoice';
+    document.getElementById('editing-badge').classList.remove('hidden');
+    document.getElementById('save-btn-text').textContent = 'Update Invoice';
+    document.getElementById('cancel-edit-btn').classList.remove('hidden');
+    
+    document.getElementById('inv-number').value = inv.invoiceNumber;
+    document.getElementById('inv-date').value = inv.purchaseDate;
+    document.getElementById('inv-supplier').value = inv.supplierId;
+    document.getElementById('inv-ref').value = inv.invoiceNumber;
+    document.getElementById('inv-notes').value = inv.notes || '';
+    document.getElementById('inv-discount').value = inv.discount || 0;
+    document.getElementById('inv-tax').value = inv.tax || 0;
+    
+    document.getElementById('invoice-items-container').innerHTML = '';
+    
+    const items = appData.invoiceItems.filter(item => item.invoiceId === id);
+    if (items.length === 0) {
+        addItemRow();
+    } else {
+        items.forEach(item => {
+            addItemRow(item.productId, item.quantity, item.unit, item.unitPrice);
+        });
+    }
+    
+    updateInvoiceTotals();
+    showPage('add-invoice');
+    document.querySelector('#page-add-invoice .card').scrollIntoView({ behavior: 'smooth' });
+}
+
+window.cancelEdit = function() {
+    resetInvoiceForm();
+    editingInvoiceId = null;
+    document.getElementById('edit-invoice-id').value = '';
+    document.getElementById('invoice-form-title').textContent = 'Add New Invoice';
+    document.getElementById('editing-badge').classList.add('hidden');
+    document.getElementById('save-btn-text').textContent = 'Save Invoice';
+    document.getElementById('cancel-edit-btn').classList.add('hidden');
+}
+
 // ============ SAVE INVOICE ============
-function saveInvoice() {
+window.saveInvoice = async function() {
     const supplierId = document.getElementById('inv-supplier').value;
     const date = document.getElementById('inv-date').value;
     const invNum = document.getElementById('inv-number').value || `INV-${String(appData.invoices.length+1).padStart(3,'0')}`;
-    const ref = document.getElementById('inv-ref').value;
     const notes = document.getElementById('inv-notes').value;
 
     if (!supplierId) { alert('Please select a supplier.'); return; }
@@ -531,8 +724,6 @@ function saveInvoice() {
         if (productId && qty > 0 && price > 0) {
             const prod = appData.products.find(p => p.id === productId);
             items.push({ 
-                id: `item-${invNum}-${items.length}`,
-                invoiceId: invNum,
                 productId, 
                 productName: prod ? prod.name : 'Unknown', 
                 quantity: qty, 
@@ -551,8 +742,7 @@ function saveInvoice() {
     const total = subtotal - discount + tax;
     const supplier = appData.suppliers.find(s => s.id === supplierId);
 
-    const invoice = {
-        id: invNum,
+    const invoiceData = {
         invoiceNumber: invNum,
         supplierId,
         supplierName: supplier ? supplier.name : 'Unknown',
@@ -562,15 +752,73 @@ function saveInvoice() {
         tax,
         total,
         notes,
-        createdAt: date
+        createdAt: new Date().toISOString()
     };
 
-    appData.invoices.push(invoice);
-    appData.invoiceItems.push(...items);
-    saveToStorage();
-    alert('Invoice saved successfully!');
-    resetInvoiceForm();
-    refreshAll();
+    const editId = document.getElementById('edit-invoice-id').value;
+    
+    try {
+        if (editId) {
+            // Update existing invoice
+            await saveToFirebase('invoices', invoiceData, editId);
+            // Delete old items
+            const oldItems = appData.invoiceItems.filter(item => item.invoiceId === editId);
+            for (const item of oldItems) {
+                await deleteFromFirebase('invoiceItems', item.id);
+            }
+            // Add new items
+            for (const item of items) {
+                await saveToFirebase('invoiceItems', { ...item, invoiceId: editId });
+            }
+            // Update local data
+            const index = appData.invoices.findIndex(i => i.id === editId);
+            if (index !== -1) {
+                appData.invoices[index] = { id: editId, ...invoiceData };
+            }
+            appData.invoiceItems = appData.invoiceItems.filter(item => item.invoiceId !== editId);
+            appData.invoiceItems.push(...items.map(item => ({ ...item, invoiceId: editId, id: `item-${Date.now()}-${Math.random()}` })));
+            alert('Invoice updated successfully!');
+        } else {
+            // Create new invoice
+            const invId = await saveToFirebase('invoices', invoiceData);
+            for (const item of items) {
+                await saveToFirebase('invoiceItems', { ...item, invoiceId: invId });
+            }
+            // Update local data
+            const newInv = { id: invId, ...invoiceData };
+            appData.invoices.push(newInv);
+            appData.invoiceItems.push(...items.map(item => ({ ...item, invoiceId: invId, id: `item-${Date.now()}-${Math.random()}` })));
+            alert('Invoice saved successfully to Firebase!');
+        }
+        
+        saveToStorage();
+        cancelEdit();
+        refreshAll();
+        renderPurchases();
+        setSyncStatus('synced', `(${appData.invoices.length} invoices)`);
+        
+    } catch (error) {
+        // Fallback to localStorage only
+        console.error('Firebase save failed, using localStorage:', error);
+        if (editId) {
+            const index = appData.invoices.findIndex(i => i.id === editId);
+            if (index !== -1) {
+                appData.invoices[index] = { id: editId, ...invoiceData };
+            }
+            appData.invoiceItems = appData.invoiceItems.filter(item => item.invoiceId !== editId);
+            appData.invoiceItems.push(...items.map(item => ({ ...item, invoiceId: editId, id: `item-${Date.now()}-${Math.random()}` })));
+            alert('Invoice updated locally (Firebase error)');
+        } else {
+            const newInv = { id: `inv-${Date.now()}`, ...invoiceData };
+            appData.invoices.push(newInv);
+            appData.invoiceItems.push(...items.map(item => ({ ...item, invoiceId: newInv.id, id: `item-${Date.now()}-${Math.random()}` })));
+            alert('Invoice saved locally (Firebase error)');
+        }
+        saveToStorage();
+        cancelEdit();
+        refreshAll();
+        renderPurchases();
+    }
 }
 
 function resetInvoiceForm() {
@@ -585,16 +833,16 @@ function resetInvoiceForm() {
     addItemRow();
     updateInvoiceTotals();
 }
+window.resetInvoiceForm = resetInvoiceForm;
 
 // ============ SUPPLIER MODAL ============
-function openSupplierModal() { document.getElementById('supplierModal').classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+window.openSupplierModal = function() { document.getElementById('supplierModal').classList.add('open'); }
+window.closeModal = function(id) { document.getElementById(id).classList.remove('open'); }
 
-function saveSupplier() {
+window.saveSupplier = async function() {
     const name = document.getElementById('sup-name').value.trim();
     if (!name) { alert('Supplier name is required.'); return; }
     const data = { 
-        id: `sup-${Date.now()}`,
         name, 
         contactPerson: document.getElementById('sup-contact').value, 
         phone: document.getElementById('sup-phone').value, 
@@ -602,7 +850,15 @@ function saveSupplier() {
         address: document.getElementById('sup-address').value, 
         notes: document.getElementById('sup-notes').value 
     };
-    appData.suppliers.push(data);
+    try {
+        const id = await saveToFirebase('suppliers', data);
+        appData.suppliers.push({ id, ...data });
+        setSyncStatus('synced', `(${appData.suppliers.length} suppliers)`);
+    } catch (error) {
+        const id = `sup-${Date.now()}`;
+        appData.suppliers.push({ id, ...data });
+        alert('Supplier saved locally (Firebase error)');
+    }
     saveToStorage();
     closeModal('supplierModal');
     refreshAll();
@@ -615,19 +871,26 @@ function saveSupplier() {
 }
 
 // ============ PRODUCT MODAL ============
-function openProductModal() { document.getElementById('productModal').classList.add('open'); }
+window.openProductModal = function() { document.getElementById('productModal').classList.add('open'); }
 
-function saveProduct() {
+window.saveProduct = async function() {
     const name = document.getElementById('prod-name').value.trim();
     if (!name) { alert('Product name is required.'); return; }
     const data = { 
-        id: `prod-${Date.now()}`,
         name, 
         category: document.getElementById('prod-category').value, 
         unit: document.getElementById('prod-unit').value, 
         notes: document.getElementById('prod-notes').value 
     };
-    appData.products.push(data);
+    try {
+        const id = await saveToFirebase('products', data);
+        appData.products.push({ id, ...data });
+        setSyncStatus('synced', `(${appData.products.length} products)`);
+    } catch (error) {
+        const id = `prod-${Date.now()}`;
+        appData.products.push({ id, ...data });
+        alert('Product saved locally (Firebase error)');
+    }
     saveToStorage();
     closeModal('productModal');
     refreshAll();
@@ -637,7 +900,7 @@ function saveProduct() {
 }
 
 // ============ PRICE COMPARISON ============
-function comparePrices() {
+window.comparePrices = function() {
     const productId = document.getElementById('compare-product-select').value;
     if (!productId) { document.getElementById('compare-results').innerHTML = '<div class="empty-state"><i class="fas fa-balance-scale"></i><p>Select a product to compare prices</p></div>'; return; }
     const items = appData.invoiceItems.filter(it => it.productId === productId);
@@ -673,7 +936,7 @@ function comparePrices() {
 }
 
 // ============ PURCHASES ============
-function filterPurchases(filter, btn) {
+window.filterPurchases = function(filter, btn) {
     currentFilter = filter;
     document.querySelectorAll('#page-purchases .tab').forEach(t => t.classList.remove('active'));
     if (btn) btn.classList.add('active');
@@ -716,26 +979,51 @@ function renderPurchases() {
             <td>${items.length}</td>
             <td>£${inv.total.toFixed(2)}</td>
             <td>
-                <button class="text-blue-600 text-sm mr-2" onclick="viewInvoice('${inv.id}')"><i class="fas fa-eye"></i></button>
-                <button class="text-red-600 text-sm" onclick="deleteInvoice('${inv.id}')"><i class="fas fa-trash"></i></button>
+                <button class="text-blue-600 text-sm mr-2" onclick="editInvoice('${inv.id}')" title="Edit"><i class="fas fa-edit"></i></button>
+                <button class="text-green-600 text-sm mr-2" onclick="viewInvoice('${inv.id}')" title="View"><i class="fas fa-eye"></i></button>
+                <button class="text-red-600 text-sm" onclick="deleteInvoice('${inv.id}')" title="Delete"><i class="fas fa-trash"></i></button>
             </td>
         </tr>`;
     }).join('');
 }
+window.renderPurchases = renderPurchases;
 
-function viewInvoice(id) {
+window.viewInvoice = function(id) {
     const inv = appData.invoices.find(i => i.id === id);
     if (!inv) return;
     const items = appData.invoiceItems.filter(it => it.invoiceId === id);
-    let msg = `Invoice: ${inv.invoiceNumber}\nSupplier: ${inv.supplierName || 'Unknown'}\nDate: ${formatDate(inv.purchaseDate)}\nTotal: £${inv.total.toFixed(2)}\nItems:\n`;
-    items.forEach(item => {
-        msg += `  ${item.productName} × ${item.quantity} ${item.unit} @ £${item.unitPrice.toFixed(2)} = £${item.total.toFixed(2)}\n`;
+    let msg = `📄 INVOICE: ${inv.invoiceNumber}\n`;
+    msg += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+    msg += `📅 Date: ${formatDate(inv.purchaseDate)}\n`;
+    msg += `🏢 Supplier: ${inv.supplierName || 'Unknown'}\n`;
+    msg += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+    msg += `ITEMS:\n`;
+    items.forEach((item, idx) => {
+        msg += `  ${idx+1}. ${item.productName} × ${item.quantity} ${item.unit} @ £${item.unitPrice.toFixed(2)} = £${item.total.toFixed(2)}\n`;
     });
+    msg += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+    msg += `Subtotal: £${inv.subtotal.toFixed(2)}\n`;
+    msg += `Discount: -£${(inv.discount || 0).toFixed(2)}\n`;
+    msg += `Tax: +£${(inv.tax || 0).toFixed(2)}\n`;
+    msg += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+    msg += `💰 TOTAL: £${inv.total.toFixed(2)}\n`;
+    if (inv.notes) msg += `📝 Notes: ${inv.notes}\n`;
     alert(msg);
 }
 
-function deleteInvoice(id) {
-    if (!confirm('Delete this invoice?')) return;
+window.deleteInvoice = async function(id) {
+    if (!confirm('Delete this invoice permanently?')) return;
+    try {
+        await deleteFromFirebase('invoices', id);
+        // Delete associated items
+        const items = appData.invoiceItems.filter(item => item.invoiceId === id);
+        for (const item of items) {
+            await deleteFromFirebase('invoiceItems', item.id);
+        }
+        setSyncStatus('synced', `(${appData.invoices.length - 1} invoices)`);
+    } catch (error) {
+        console.error('Firebase delete failed, using localStorage:', error);
+    }
     appData.invoices = appData.invoices.filter(i => i.id !== id);
     appData.invoiceItems = appData.invoiceItems.filter(i => i.invoiceId !== id);
     saveToStorage();
@@ -744,7 +1032,7 @@ function deleteInvoice(id) {
 }
 
 // ============ ANALYTICS ============
-function runAnalytics(period, btn) {
+window.runAnalytics = function(period, btn) {
     if (btn) {
         document.querySelectorAll('#page-analytics .tab').forEach(t => t.classList.remove('active'));
         btn.classList.add('active');
@@ -759,7 +1047,6 @@ function runAnalytics(period, btn) {
     const startStr = startDate.toISOString().split('T')[0];
     const filtered = appData.invoices.filter(inv => inv.purchaseDate >= startStr);
     const total = filtered.reduce((s, inv) => s + inv.total, 0);
-    const avgDaily = filtered.length ? total / filtered.length : 0;
 
     const supBreak = {};
     filtered.forEach(inv => { const name = inv.supplierName || 'Unknown'; supBreak[name] = (supBreak[name] || 0) + inv.total; });
@@ -780,7 +1067,7 @@ function runAnalytics(period, btn) {
 }
 
 // ============ REPORTS ============
-function generateReport(type) {
+window.generateReport = function(type) {
     if (type === 'csv') {
         let csv = 'Date,Invoice,Supplier,Total\n';
         appData.invoices.forEach(inv => { csv += `${inv.purchaseDate},${inv.invoiceNumber},${inv.supplierName || ''},${inv.total.toFixed(2)}\n`; });
@@ -792,7 +1079,7 @@ function generateReport(type) {
 }
 
 // ============ NAVIGATION ============
-function showPage(page) {
+window.showPage = function(page) {
     document.querySelectorAll('.page-content').forEach(el => el.classList.remove('active'));
     document.getElementById(`page-${page}`).classList.add('active');
     document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
@@ -807,7 +1094,7 @@ function showPage(page) {
     toggleSidebar(false);
 }
 
-function toggleSidebar(force) {
+window.toggleSidebar = function(force) {
     const sidebar = document.getElementById('sidebar');
     if (force === false) sidebar.classList.remove('open');
     else sidebar.classList.toggle('open');
@@ -821,7 +1108,12 @@ function formatDate(dateStr) {
 }
 
 // ============ START ============
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    document.getElementById('inv-date').value = new Date().toISOString().split('T')[0];
+    loadDataFromFirebase();
+    addItemRow();
+});
 </script>
 </body>
 </html>
