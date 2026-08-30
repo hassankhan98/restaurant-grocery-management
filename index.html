@@ -1080,72 +1080,9 @@
             display: inline-block;
         }
 
-        /* login page override */
-        .login-page {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            background: var(--bg-primary);
-            padding: 1.5rem;
-        }
-        .login-box {
-            background: var(--bg-card);
-            border-radius: var(--radius);
-            padding: 2.5rem;
-            max-width: 400px;
-            width: 100%;
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--border-color);
-        }
-        .login-box .brand {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        .login-box .brand .logo {
-            width: 56px;
-            height: 56px;
-            background: var(--accent);
-            border-radius: var(--radius-sm);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.6rem;
-            font-weight: 700;
-            color: #fff;
-        }
-        .login-box .brand h1 {
-            margin-top: 0.5rem;
-            font-size: 1.4rem;
-        }
-        .login-box .brand p {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-        }
-        .login-box .form-group {
-            margin-bottom: 1.25rem;
-        }
-        .login-box .btn {
-            width: 100%;
-            justify-content: center;
-            padding: 0.7rem;
-        }
-        .login-box .error-msg {
-            color: var(--danger);
-            font-size: 0.85rem;
-            margin-top: 0.5rem;
-            display: none;
-        }
-        .login-box .error-msg.show {
-            display: block;
-        }
-
-        /* hide auth when logged in */
-        .auth-required {
-            display: none;
-        }
-        .auth-required.show {
-            display: block;
+        /* Hide login page completely */
+        #loginPage {
+            display: none !important;
         }
 
         /* role-based visibility */
@@ -1178,38 +1115,9 @@
 <body>
 
     <!-- ============================================================ -->
-    <!-- LOGIN PAGE (hidden when authenticated) -->
+    <!-- MAIN APP (always visible) -->
     <!-- ============================================================ -->
-    <div id="loginPage" class="login-page auth-required show">
-        <div class="login-box">
-            <div class="brand">
-                <div class="logo">SM</div>
-                <h1>Shinwari Mahfil</h1>
-                <p>Restaurant Management System</p>
-            </div>
-            <form id="loginForm" autocomplete="off">
-                <div class="form-group">
-                    <label for="loginEmail">Email</label>
-                    <input type="email" id="loginEmail" placeholder="admin@shinwari.com" required />
-                </div>
-                <div class="form-group">
-                    <label for="loginPassword">Password</label>
-                    <input type="password" id="loginPassword" placeholder="••••••••" required />
-                </div>
-                <div id="loginError" class="error-msg">Invalid email or password.</div>
-                <button type="submit" class="btn btn-primary">Sign In</button>
-            </form>
-            <p style="margin-top:1rem;font-size:0.75rem;color:var(--text-muted);text-align:center;">
-                Demo: admin@shinwari.com / admin123
-            </p>
-        </div>
-    </div>
-
-    <!-- ============================================================ -->
-    <!-- MAIN APP (hidden until auth) -->
-    <!-- ============================================================ -->
-    <div id="appRoot" class="app-container auth-required" style="display:none;">
-
+    <div id="appRoot" class="app-container">
         <!-- SIDEBAR -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-brand">
@@ -1885,8 +1793,8 @@
         // STATE
         // ================================================================
 
-        let currentUser = null;
-        let currentRole = 'admin'; // admin | manager | employee
+        let currentUser = { email: 'admin@shinwari.com', role: 'admin', name: 'Admin' };
+        let currentRole = 'admin';
         let currentPage = 'dashboard';
         let theme = localStorage.getItem('sm_theme') || 'light';
         let chartInstances = {};
@@ -1911,18 +1819,10 @@
             // Date display
             updateDateDisplay();
 
-            // Check auth
-            const savedAuth = DB.get('auth', null);
-            if (savedAuth && savedAuth.email) {
-                currentUser = savedAuth;
-                currentRole = savedAuth.role || 'admin';
-                showApp();
-            } else {
-                showLogin();
-            }
+            // Set user
+            showApp();
 
             // Event listeners
-            document.getElementById('loginForm').addEventListener('submit', handleLogin);
             document.getElementById('logoutBtn').addEventListener('click', handleLogout);
             document.getElementById('themeToggle').addEventListener('click', toggleTheme);
             document.getElementById('menuToggle').addEventListener('click', toggleSidebar);
@@ -1982,55 +1882,19 @@
         });
 
         // ================================================================
-        // AUTH
+        // AUTH (simplified)
         // ================================================================
 
-        function handleLogin(e) {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value.trim();
-
-            // Demo auth - in production use Supabase
-            const validUsers = [
-                { email: 'admin@shinwari.com', password: 'admin123', role: 'admin', name: 'Admin' },
-                { email: 'manager@shinwari.com', password: 'manager123', role: 'manager', name: 'Manager' },
-                { email: 'employee@shinwari.com', password: 'employee123', role: 'employee', name: 'Employee' },
-            ];
-
-            const user = validUsers.find(u => u.email === email && u.password === password);
-            if (user) {
-                const authData = { email: user.email, role: user.role, name: user.name };
-                DB.set('auth', authData);
-                currentUser = authData;
-                currentRole = user.role;
-                showApp();
-                toast('Welcome back, ' + user.name + '!', 'success');
-            } else {
-                document.getElementById('loginError').classList.add('show');
-            }
-        }
-
         function handleLogout() {
-            DB.set('auth', null);
-            currentUser = null;
-            showLogin();
-            toast('Signed out.', '');
-        }
-
-        function showLogin() {
-            document.getElementById('loginPage').classList.add('show');
-            document.getElementById('loginPage').style.display = 'flex';
-            document.getElementById('appRoot').style.display = 'none';
-            document.getElementById('appRoot').classList.remove('show');
+            // Instead of logging out, just reload and keep admin
+            toast('Signed out (demo mode).', '');
+            // Reload to reset state
+            location.reload();
         }
 
         function showApp() {
-            document.getElementById('loginPage').classList.remove('show');
-            document.getElementById('loginPage').style.display = 'none';
-            document.getElementById('appRoot').style.display = 'flex';
-            document.getElementById('appRoot').classList.add('show');
             // Update sidebar user
-            const name = currentUser ? currentUser.name : 'User';
+            const name = currentUser ? currentUser.name : 'Admin';
             const role = currentUser ? currentUser.role : 'admin';
             document.getElementById('sidebarAvatar').textContent = name.charAt(0).toUpperCase();
             document.getElementById('sidebarUserName').textContent = name;
@@ -2057,7 +1921,6 @@
                 document.documentElement.removeAttribute('data-theme');
                 document.getElementById('themeToggle').innerHTML = '<i class="fas fa-moon"></i>';
             } else {
-                // system
                 const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
                 if (prefersDark) {
                     document.documentElement.setAttribute('data-theme', 'dark');
@@ -2091,7 +1954,6 @@
             document.querySelectorAll('.sidebar-nav a[data-page]').forEach(el => {
                 el.classList.toggle('active', el.dataset.page === page);
             });
-            // Update title
             const titles = {
                 dashboard: 'Dashboard',
                 sales: 'Sales',
@@ -2108,7 +1970,6 @@
                 settings: 'Settings'
             };
             document.getElementById('pageTitle').innerHTML = titles[page] || page;
-            // Re-render page content if needed
             if (page === 'dashboard') renderDashboard();
             if (page === 'sales') renderSales();
             if (page === 'purchases') renderPurchases();
@@ -2571,7 +2432,6 @@
             const sales = DB.get('sales', []);
             sales.push(sale);
             DB.set('sales', sales);
-            // Audit
             addAudit(currentUser ? currentUser.name : 'User', 'Added sale', `Total: ${formatCurrency(sale.total)}`);
             closeModal('saleModal');
             document.getElementById('saleForm').reset();
@@ -2602,7 +2462,6 @@
             document.getElementById('saleOther').value = sale.other || 0;
             document.getElementById('saleCustomers').value = sale.customers || 0;
             document.getElementById('saleNotes').value = sale.notes || '';
-            // Remove old and re-add on submit
             const form = document.getElementById('saleForm');
             const origSubmit = form.onsubmit;
             form.onsubmit = function(e) {
@@ -2716,7 +2575,6 @@
             const purchases = DB.get('purchases', []);
             purchases.push(purchase);
             DB.set('purchases', purchases);
-            // Update inventory
             updateInventoryFromPurchase(purchase);
             addAudit(currentUser ? currentUser.name : 'User', 'Added purchase', `Invoice: ${purchase.invoice}`);
             closeModal('purchaseModal');
@@ -3047,7 +2905,6 @@
             const today = todayStr();
             const todayReqs = requests.filter(r => r.date === today && r.status !== 'rejected' && r.status !== 'completed');
             if (todayReqs.length === 0) { toast('No requests for today.', 'warning'); return; }
-            // Combine duplicates
             const combined = {};
             todayReqs.forEach(r => {
                 const key = r.item + '|' + r.unit;
@@ -3575,7 +3432,7 @@
         // ================================================================
 
         function renderReports() {
-            // just placeholder
+            // placeholder
         }
 
         function generateSalesReport() {
@@ -3689,7 +3546,6 @@
             const exp = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
             const profit = rev - pur - exp;
 
-            // Category breakdown
             const catMap = {};
             purchases.forEach(p => { catMap[p.category || 'Other'] = (catMap[p.category || 'Other'] || 0) + (p.total ||
                 0); });
@@ -3839,7 +3695,6 @@
             const dot = document.getElementById('notifDot');
             if (count > 0) { dot.style.display = 'block'; } else { dot.style.display = 'none'; }
 
-            // Build notif list
             const list = document.getElementById('notifList');
             let html = '';
             if (lowStock.length > 0) {
