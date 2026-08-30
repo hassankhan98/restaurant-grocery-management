@@ -1046,40 +1046,44 @@
 
     // Auth state listener
     auth.onAuthStateChanged(user => {
-      if (user) {
-        // Fetch user role from Firestore
-        db.collection('users').doc(user.uid).get().then(doc => {
-          if (doc.exists) {
-            const data = doc.data();
-            currentUser = { uid: user.uid, email: user.email, name: data.name || 'User', role: data.role ||
-                'employee' };
-            currentRole = currentUser.role;
+  if (user) {
+    // Fetch user role from Firestore
+    db.collection('users').doc(user.uid).get()
+      .then(doc => {
+        if (doc.exists) {
+          const data = doc.data();
+          currentUser = { uid: user.uid, email: user.email, name: data.name || 'User', role: data.role || 'employee' };
+          currentRole = currentUser.role;
+          showApp();
+        } else {
+          // No user document – create one with default role
+          const defaultRole = (user.email === 'admin@shinwari.com') ? 'admin' : 'employee';
+          const defaultName = (user.email === 'admin@shinwari.com') ? 'Admin' : user.email.split('@')[0];
+          
+          db.collection('users').doc(user.uid).set({
+            name: defaultName,
+            role: defaultRole,
+            email: user.email,
+            createdAt: new Date().toISOString()
+          }).then(() => {
+            currentUser = { uid: user.uid, email: user.email, name: defaultName, role: defaultRole };
+            currentRole = defaultRole;
             showApp();
-          } else {
-            // create default admin if first time
-            if (user.email === 'admin@shinwari.com') {
-              db.collection('users').doc(user.uid).set({
-                name: 'Admin',
-                role: 'admin',
-                email: user.email
-              }).then(() => {
-                currentUser = { uid: user.uid, email: user.email, name: 'Admin', role: 'admin' };
-                currentRole = 'admin';
-                showApp();
-              });
-            } else {
-              // unknown user
-              auth.signOut();
-              showLogin('User not authorized.');
-            }
-          }
-        }).catch(() => {
-          showLogin('Error loading user data.');
-        });
-      } else {
-        showLogin();
-      }
-    });
+            toast('Welcome! Your account has been set up.', 'success');
+          }).catch(err => {
+            console.error('Error creating user document:', err);
+            showLogin('Error creating user profile. Check Firestore permissions.');
+          });
+        }
+      })
+      .catch(err => {
+        console.error('Error fetching user document:', err);
+        showLogin('Error loading user data. Check Firestore permissions and network.');
+      });
+  } else {
+    showLogin();
+  }
+});
 
     // Event listeners
     document.getElementById('loginForm').addEventListener('submit', handleLogin);
