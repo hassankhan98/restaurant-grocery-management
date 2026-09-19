@@ -1468,7 +1468,6 @@
       getCollection('sales'),
       getCollection('purchases'),
       getCollection('inventory'),
-      getCollection(),
       getCollection('suppliers'),
       getCollection('expenses'),
       getCollection('bookings'),
@@ -2114,11 +2113,17 @@
     } else {
       // Create new
       booking.createdAt = new Date().toISOString();
-      addDocument('bookings', booking).then(() => {
+      addDocument('bookings', booking).then((docRef) => {
+        console.log('Booking saved with ID:', docRef.id);
         closeModal('bookingModal');
         resetBookingForm();
         toast('Hall booking added!', 'success');
-      }).catch(err => toast('Error: ' + err.message, 'error'));
+        // Force refresh
+        if (typeof renderAll === 'function') renderAll();
+      }).catch(err => {
+        console.error('Booking save error:', err);
+        toast('Error saving booking: ' + (err.message || err.code || err), 'error');
+      });
     }
   }
 
