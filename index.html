@@ -2528,19 +2528,24 @@
   function updateNotifications() {
     const data = window._data || {};
     const inventory = data.inventory || [];
-    const lowStock = inventory.filter(i => i.qty <= i.min);
-    const count = lowStock.length + pending.length;
+    const bookings = data.bookings || [];
+    const lowStock = inventory.filter(i => i.qty <= (i.min || 5));
+    const today = todayStr();
+    const todayBookings = bookings.filter(b => b.date === today && b.status === 'pending');
+    const count = lowStock.length + todayBookings.length;
     const dot = document.getElementById('notifDot');
-    if (count > 0) { dot.style.display = 'block'; } else { dot.style.display = 'none'; }
+    if (dot) {
+      if (count > 0) { dot.style.display = 'block'; } else { dot.style.display = 'none'; }
+    }
 
     const list = document.getElementById('notifList');
+    if (!list) return;
     let html = '';
     if (lowStock.length > 0) {
-      html +=
-        `<div style="padding:0.4rem 0;border-bottom:1px solid var(--border-color);"><i class="fas fa-exclamation-triangle" style="color:var(--warning);"></i> <strong>Low Stock:</strong> ${lowStock.map(i => i.name).join(', ')}</div>`;
+      html += `<div style="padding:0.4rem 0;border-bottom:1px solid var(--border-color);"><i class="fas fa-exclamation-triangle" style="color:var(--warning);"></i> <strong>Low Stock:</strong> ${lowStock.map(i => i.name).join(', ')}</div>`;
     }
-    if (pending.length > 0) {
-      html +=
+    if (todayBookings.length > 0) {
+      html += `<div style="padding:0.4rem 0;border-bottom:1px solid var(--border-color);"><i class="fas fa-calendar-alt" style="color:var(--info);"></i> <strong>Pending Bookings today:</strong> ${todayBookings.length}</div>`;
     }
     if (!html) html = '<p class="text-muted text-center">All clear! No notifications.</p>';
     list.innerHTML = html;
