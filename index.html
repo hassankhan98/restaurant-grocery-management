@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes" />
-  <title>Shinwari Mahfil · Restaurant Management</title>
+  <title>Shirwani Mafil · Restaurant Management</title>
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#1e293b" />
   <!-- Font Awesome & Chart.js -->
@@ -314,7 +314,7 @@
   <div class="login-box">
     <div class="brand">
       <div class="logo">SM</div>
-      <h1>Shinwari Mahfil</h1>
+      <h1>Shirwani Mafil</h1>
       <p>Restaurant Management System</p>
     </div>
     <form id="loginForm" autocomplete="off">
@@ -345,7 +345,7 @@
     <div class="sidebar-brand">
       <div class="logo-placeholder">SM</div>
       <div class="brand-text">
-        Shinwari Mahfil
+        Shirwani Mafil
         <small>Restaurant Management</small>
       </div>
     </div>
@@ -358,6 +358,7 @@
       <a href="#" data-page="grocery-requests"><i class="fas fa-clipboard-list"></i> Grocery Requests</a>
       <a href="#" data-page="suppliers" class="role-admin role-manager"><i class="fas fa-truck"></i> Suppliers</a>
       <a href="#" data-page="expenses" class="role-admin role-manager"><i class="fas fa-receipt"></i> Expenses</a>
+      <a href="#" data-page="bookings" class="role-admin role-manager"><i class="fas fa-calendar-alt"></i> Hall Bookings</a>
       <a href="#" data-page="employees" class="role-admin"><i class="fas fa-users"></i> Employees</a>
       <a href="#" data-page="menu" class="role-admin role-manager"><i class="fas fa-utensils"></i> Menu</a>
       <a href="#" data-page="waste" class="role-admin role-manager"><i class="fas fa-trash-alt"></i> Waste</a>
@@ -412,6 +413,7 @@
         <button class="btn btn-success" onclick="openModal('purchaseModal')"><i class="fas fa-plus"></i> Add Purchase</button>
         <button class="btn btn-warning" onclick="openModal('groceryRequestModal')"><i class="fas fa-plus"></i> Grocery Request</button>
         <button class="btn btn-outline" onclick="openModal('expenseModal')"><i class="fas fa-plus"></i> Add Expense</button>
+        <button class="btn btn-outline" onclick="openModal('bookingModal')"><i class="fas fa-plus"></i> Hall Booking</button>
         <button class="btn btn-outline" onclick="openModal('inventoryModal')"><i class="fas fa-plus"></i> Add Stock</button>
         <button class="btn btn-outline" onclick="navigateTo('grocery-requests')"><i class="fas fa-list"></i> Today's Requests</button>
         <button class="btn btn-outline" onclick="navigateTo('inventory')"><i class="fas fa-exclamation-triangle"></i> Low Stock</button>
@@ -425,6 +427,7 @@
         <div class="stat-card"><div class="label">Est. Profit</div><div class="value" id="statProfit">£0</div><div class="sub">Today</div><i class="fas fa-chart-line icon"></i></div>
         <div class="stat-card"><div class="label">Low Stock Items</div><div class="value" id="statLowStock">0</div><div class="sub">needs attention</div><i class="fas fa-exclamation-triangle icon"></i></div>
         <div class="stat-card"><div class="label">Pending Requests</div><div class="value" id="statPendingRequests">0</div><div class="sub">grocery requests</div><i class="fas fa-clock icon"></i></div>
+        <div class="stat-card"><div class="label">Today's Bookings</div><div class="value" id="statBookings">0</div><div class="sub">hall bookings</div><i class="fas fa-calendar-check icon"></i></div>
       </div>
 
       <div class="grid-2">
@@ -594,6 +597,49 @@
     </section>
 
     <!-- ========================================================== -->
+    <!-- PAGE: HALL BOOKINGS -->
+    <!-- ========================================================== -->
+    <section class="page-section" id="page-bookings">
+      <div class="flex-between mb-2">
+        <h2 style="font-size:1.2rem;">Hall Bookings</h2>
+        <button class="btn btn-primary" onclick="openModal('bookingModal')"><i class="fas fa-plus"></i> Add Booking</button>
+      </div>
+      <div class="filter-bar">
+        <input type="date" id="bookingFilterFrom" />
+        <input type="date" id="bookingFilterTo" />
+        <select id="bookingFilterStatus">
+          <option value="">All Status</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="pending">Pending</option>
+          <option value="cancelled">Cancelled</option>
+          <option value="completed">Completed</option>
+        </select>
+        <input type="text" id="bookingFilterSearch" placeholder="Search customer / phone..." />
+        <button class="btn btn-sm btn-outline" onclick="applyBookingFilters()">Filter</button>
+        <button class="btn btn-sm btn-outline" onclick="resetBookingFilters()">Reset</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Customer</th>
+              <th>Phone</th>
+              <th>Guests</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="bookingsTableBody">
+            <tr><td colspan="8" class="text-muted text-center">No hall bookings yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ========================================================== -->
     <!-- PAGE: EMPLOYEES -->
     <!-- ========================================================== -->
     <section class="page-section" id="page-employees">
@@ -722,7 +768,7 @@
       <div class="grid-2">
         <div class="card">
           <div class="card-title">Restaurant Info</div>
-          <div class="form-group"><label>Restaurant Name</label><input type="text" id="settingRestaurantName" value="Shinwari Mahfil" /></div>
+          <div class="form-group"><label>Restaurant Name</label><input type="text" id="settingRestaurantName" value="Shirwani Mafil" /></div>
           <div class="form-group"><label>Currency</label><select id="settingCurrency"><option value="GBP">GBP (£)</option><option value="USD">USD ($)</option><option value="EUR">EUR (€)</option></select></div>
           <div class="form-group"><label>Address</label><input type="text" id="settingAddress" placeholder="Restaurant address" /></div>
           <div class="form-group"><label>Phone</label><input type="text" id="settingPhone" placeholder="Phone number" /></div>
@@ -746,7 +792,7 @@
         </div>
         <div class="card">
           <div class="card-title">About</div>
-          <p style="font-size:0.9rem;color:var(--text-secondary);">Shinwari Mahfil Restaurant Management System v1.0</p>
+          <p style="font-size:0.9rem;color:var(--text-secondary);">Shirwani Mafil Restaurant Management System v1.0</p>
           <p style="font-size:0.8rem;color:var(--text-muted);">Built with ❤️ for restaurant staff.</p>
         </div>
       </div>
@@ -986,6 +1032,80 @@
   </div>
 </div>
 
+<!-- HALL BOOKING MODAL -->
+<div class="modal-overlay" id="bookingModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 id="bookingModalTitle">Add Hall Booking</h2>
+      <button class="modal-close" onclick="closeModal('bookingModal')">&times;</button>
+    </div>
+    <form id="bookingForm">
+      <input type="hidden" id="bookingId" value="" />
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" id="bookingDate" required />
+        </div>
+        <div class="form-group">
+          <label>Time Slot</label>
+          <select id="bookingTime" required>
+            <option value="11:00 - 14:00">11:00 - 14:00 (Lunch)</option>
+            <option value="14:00 - 17:00">14:00 - 17:00 (Afternoon)</option>
+            <option value="17:00 - 20:00">17:00 - 20:00 (Evening)</option>
+            <option value="20:00 - 23:00">20:00 - 23:00 (Night)</option>
+            <option value="Full Day">Full Day</option>
+            <option value="Custom">Custom</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Customer Name</label>
+          <input type="text" id="bookingCustomer" placeholder="Full name" required />
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="tel" id="bookingPhone" placeholder="Phone number" required />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Number of Guests</label>
+          <input type="number" id="bookingGuests" min="1" value="20" required />
+        </div>
+        <div class="form-group">
+          <label>Package / Amount (£)</label>
+          <input type="number" id="bookingAmount" step="0.01" placeholder="0.00" required />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Status</label>
+          <select id="bookingStatus">
+            <option value="pending">Pending</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Payment Status</label>
+          <select id="bookingPayment">
+            <option value="unpaid">Unpaid</option>
+            <option value="partial">Partially Paid</option>
+            <option value="paid">Paid</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Notes / Special Requests</label>
+        <textarea id="bookingNotes" placeholder="Any special requests, menu preferences, etc."></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary w-full">Save Booking</button>
+    </form>
+  </div>
+</div>
+
 <!-- NOTIFICATION PANEL -->
 <div class="modal-overlay" id="notifPanel">
   <div class="modal-box" style="max-width:480px;">
@@ -1119,6 +1239,7 @@
     document.getElementById('employeeForm').addEventListener('submit', handleEmployeeSubmit);
     document.getElementById('menuForm').addEventListener('submit', handleMenuSubmit);
     document.getElementById('wasteForm').addEventListener('submit', handleWasteSubmit);
+    document.getElementById('bookingForm').addEventListener('submit', handleBookingSubmit);
 
     // Online/offline
     window.addEventListener('online', () => { document.getElementById('onlineStatus').textContent = '● Online';
@@ -1260,6 +1381,7 @@
       'grocery-requests': 'Grocery Requests',
       suppliers: 'Suppliers',
       expenses: 'Expenses',
+      bookings: 'Hall Bookings',
       employees: 'Employees',
       menu: 'Menu',
       waste: 'Waste',
@@ -1276,6 +1398,7 @@
     if (page === 'grocery-requests') renderGroceryRequests();
     if (page === 'suppliers') renderSuppliers();
     if (page === 'expenses') renderExpenses();
+    if (page === 'bookings') renderBookings();
     if (page === 'employees') renderEmployees();
     if (page === 'menu') renderMenu();
     if (page === 'waste') renderWaste();
@@ -1291,9 +1414,26 @@
   // ================================================================
   // MODALS
   // ================================================================
-  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function openModal(id) {
+    if (id === 'bookingModal') {
+      // Only reset if not editing (no bookingId set)
+      if (!document.getElementById('bookingId').value) {
+        resetBookingForm();
+      }
+    }
+    document.getElementById(id).classList.add('open');
+  }
 
-  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+    if (id === 'bookingModal') {
+      // Clear edit mode after closing
+      setTimeout(() => {
+        document.getElementById('bookingId').value = '';
+        document.getElementById('bookingModalTitle').textContent = 'Add Hall Booking';
+      }, 300);
+    }
+  }
 
   // ================================================================
   // TOAST
@@ -1369,7 +1509,7 @@
 
   function startRealtimeListeners() {
     // We'll use onSnapshot for main collections to auto-refresh UI
-    const collections = ['sales', 'purchases', 'inventory', 'groceryRequests', 'suppliers', 'expenses', 'employees',
+    const collections = ['sales', 'purchases', 'inventory', 'groceryRequests', 'suppliers', 'expenses', 'bookings', 'employees',
       'menu', 'waste', 'audit'
     ];
     collections.forEach(col => {
@@ -1396,13 +1536,14 @@
       getCollection('groceryRequests'),
       getCollection('suppliers'),
       getCollection('expenses'),
+      getCollection('bookings'),
       getCollection('employees'),
       getCollection('menu'),
       getCollection('waste'),
       getCollection('audit')
-    ]).then(([sales, purchases, inventory, groceryRequests, suppliers, expenses, employees, menu, waste, audit]) => {
+    ]).then(([sales, purchases, inventory, groceryRequests, suppliers, expenses, bookings, employees, menu, waste, audit]) => {
       // Store in a global cache for quick access
-      window._data = { sales, purchases, inventory, groceryRequests, suppliers, expenses, employees, menu, waste,
+      window._data = { sales, purchases, inventory, groceryRequests, suppliers, expenses, bookings, employees, menu, waste,
       audit };
       // Render current page
       const page = currentPage;
@@ -1413,6 +1554,7 @@
       else if (page === 'grocery-requests') renderGroceryRequests();
       else if (page === 'suppliers') renderSuppliers();
       else if (page === 'expenses') renderExpenses();
+      else if (page === 'bookings') renderBookings();
       else if (page === 'employees') renderEmployees();
       else if (page === 'menu') renderMenu();
       else if (page === 'waste') renderWaste();
@@ -1433,6 +1575,7 @@
     const purchases = data.purchases || [];
     const inventory = data.inventory || [];
     const requests = data.groceryRequests || [];
+    const bookings = data.bookings || [];
     const audit = data.audit || [];
 
     const today = todayStr();
@@ -1443,6 +1586,7 @@
     const todayPurchases = purchases.filter(p => p.date === today);
     const todayPurchasesTotal = todayPurchases.reduce((sum, p) => sum + (p.total || 0), 0);
     const profit = todaySalesTotal - todayPurchasesTotal - todayExpensesTotal;
+    const todayBookings = bookings.filter(b => b.date === today && b.status !== 'cancelled');
 
     document.getElementById('statSales').textContent = formatCurrency(todaySalesTotal);
     document.getElementById('statExpenses').textContent = formatCurrency(todayExpensesTotal);
@@ -1450,6 +1594,7 @@
     document.getElementById('statProfit').textContent = formatCurrency(profit);
     document.getElementById('statLowStock').textContent = inventory.filter(i => i.qty <= i.min).length;
     document.getElementById('statPendingRequests').textContent = requests.filter(r => r.status === 'pending').length;
+    document.getElementById('statBookings').textContent = todayBookings.length;
 
     // Charts (simplified with last 7 days)
     const last7 = [];
@@ -2119,6 +2264,129 @@
   }
 
   // ================================================================
+  // HALL BOOKINGS
+  // ================================================================
+  function renderBookings() {
+    const bookings = (window._data || {}).bookings || [];
+    const tbody = document.getElementById('bookingsTableBody');
+    if (bookings.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" class="text-muted text-center">No hall bookings yet.</td></tr>';
+      return;
+    }
+    let filtered = [...bookings];
+    const from = document.getElementById('bookingFilterFrom')?.value;
+    const to = document.getElementById('bookingFilterTo')?.value;
+    const status = document.getElementById('bookingFilterStatus')?.value;
+    const search = (document.getElementById('bookingFilterSearch')?.value || '').toLowerCase();
+
+    if (from) filtered = filtered.filter(b => b.date >= from);
+    if (to) filtered = filtered.filter(b => b.date <= to);
+    if (status) filtered = filtered.filter(b => b.status === status);
+    if (search) filtered = filtered.filter(b =>
+      (b.customer || '').toLowerCase().includes(search) ||
+      (b.phone || '').toLowerCase().includes(search)
+    );
+
+    const sorted = filtered.sort((a, b) => b.date.localeCompare(a.date) || (a.time || '').localeCompare(b.time || ''));
+    tbody.innerHTML = sorted.map(b => {
+      const statusClass = b.status === 'confirmed' ? 'approved' :
+                          b.status === 'completed' ? 'completed' :
+                          b.status === 'cancelled' ? 'rejected' : 'pending';
+      return `<tr>
+        <td>${formatDate(b.date)}</td>
+        <td>${b.time || '—'}</td>
+        <td><strong>${b.customer || '—'}</strong></td>
+        <td>${b.phone || '—'}</td>
+        <td>${b.guests || 0}</td>
+        <td><strong>${formatCurrency(b.amount || 0)}</strong></td>
+        <td><span class="badge-status ${statusClass}">${b.status || 'pending'}</span></td>
+        <td>
+          <button class="btn btn-sm btn-outline" onclick="editBooking('${b.id}')" title="Edit"><i class="fas fa-edit"></i></button>
+          <button class="btn btn-sm btn-danger" onclick="deleteBooking('${b.id}')" title="Delete"><i class="fas fa-trash"></i></button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function handleBookingSubmit(e) {
+    e.preventDefault();
+    const id = document.getElementById('bookingId').value;
+    const booking = {
+      date: document.getElementById('bookingDate').value,
+      time: document.getElementById('bookingTime').value,
+      customer: document.getElementById('bookingCustomer').value.trim(),
+      phone: document.getElementById('bookingPhone').value.trim(),
+      guests: parseInt(document.getElementById('bookingGuests').value) || 0,
+      amount: parseFloat(document.getElementById('bookingAmount').value) || 0,
+      status: document.getElementById('bookingStatus').value,
+      payment: document.getElementById('bookingPayment').value,
+      notes: document.getElementById('bookingNotes').value || '',
+      updatedAt: new Date().toISOString()
+    };
+
+    if (id) {
+      // Update existing
+      updateDocument('bookings', id, booking).then(() => {
+        closeModal('bookingModal');
+        resetBookingForm();
+        toast('Booking updated!', 'success');
+      }).catch(err => toast('Error: ' + err.message, 'error'));
+    } else {
+      // Create new
+      booking.createdAt = new Date().toISOString();
+      addDocument('bookings', booking).then(() => {
+        closeModal('bookingModal');
+        resetBookingForm();
+        toast('Hall booking added!', 'success');
+      }).catch(err => toast('Error: ' + err.message, 'error'));
+    }
+  }
+
+  function resetBookingForm() {
+    document.getElementById('bookingForm').reset();
+    document.getElementById('bookingId').value = '';
+    document.getElementById('bookingModalTitle').textContent = 'Add Hall Booking';
+    document.getElementById('bookingDate').value = todayStr();
+    document.getElementById('bookingGuests').value = 20;
+  }
+
+  function editBooking(id) {
+    const bookings = (window._data || {}).bookings || [];
+    const b = bookings.find(x => x.id === id);
+    if (!b) { toast('Booking not found.', 'error'); return; }
+
+    document.getElementById('bookingId').value = b.id;
+    document.getElementById('bookingDate').value = b.date || '';
+    document.getElementById('bookingTime').value = b.time || '17:00 - 20:00';
+    document.getElementById('bookingCustomer').value = b.customer || '';
+    document.getElementById('bookingPhone').value = b.phone || '';
+    document.getElementById('bookingGuests').value = b.guests || 20;
+    document.getElementById('bookingAmount').value = b.amount || 0;
+    document.getElementById('bookingStatus').value = b.status || 'pending';
+    document.getElementById('bookingPayment').value = b.payment || 'unpaid';
+    document.getElementById('bookingNotes').value = b.notes || '';
+    document.getElementById('bookingModalTitle').textContent = 'Edit Hall Booking';
+    openModal('bookingModal');
+  }
+
+  function deleteBooking(id) {
+    if (!confirm('Delete this hall booking?')) return;
+    deleteDocument('bookings', id).then(() => {
+      toast('Booking deleted.', '');
+    }).catch(err => toast('Error: ' + err.message, 'error'));
+  }
+
+  function applyBookingFilters() { renderBookings(); }
+
+  function resetBookingFilters() {
+    document.getElementById('bookingFilterFrom').value = '';
+    document.getElementById('bookingFilterTo').value = '';
+    document.getElementById('bookingFilterStatus').value = '';
+    document.getElementById('bookingFilterSearch').value = '';
+    renderBookings();
+  }
+
+  // ================================================================
   // EMPLOYEES
   // ================================================================
   function renderEmployees() {
@@ -2523,7 +2791,7 @@
     navigator.serviceWorker.register('/sw.js').catch(() => {});
   }
 
-  console.log('🍽️ Shinwari Mahfil Restaurant Management System with Firebase.');
+  console.log('🍽️ Shirwani Mafil Restaurant Management System with Firebase.');
   console.log('👤 Current user:', currentUser);
 
   // ================================================================
