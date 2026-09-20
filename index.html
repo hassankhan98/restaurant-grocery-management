@@ -1082,7 +1082,7 @@
   apiKey: "AIzaSyAwegncbGVk-qr_dGWuTXU_Wq0CnG_7elk",
   authDomain: "restaurant-grocery-management.firebaseapp.com",
   projectId: "restaurant-grocery-management",
-  storageBucket: "restaurant-grocery-management.firebasestorage.app",
+  storageBucket: "restaurant-grocery-management.appspot.com",
   messagingSenderId: "506737153584",
   appId: "1:506737153584:web:6f7b7d1d73f7b3ed96bff5",
   measurementId: "G-NX1MC2EVWJ"   // optional, you can keep it
@@ -1856,18 +1856,30 @@
     };
 
     if (file) {
-      // Upload image to Firebase Storage
-      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-      const path = 'invoices/' + Date.now() + '_' + Math.random().toString(36).slice(2, 8) + '.' + ext;
-      const ref = storage.ref().child(path);
-      ref.put(file).then(snapshot => snapshot.ref.getDownloadURL())
-        .then(url => savePurchase(url))
-        .then(finish)
-        .catch(err => {
-          console.error('Image upload error:', err);
-          toast('Image upload failed: ' + (err.message || err.code || 'check Storage rules'), 'error');
-          finish();
-        });
+      // Compress then upload to Storage; fallback to compressed base64 in Firestore
+      compressImage(file, 1200, 0.7).then(blob => {
+        const path = 'invoices/' + Date.now() + '_' + Math.random().toString(36).slice(2, 8) + '.jpg';
+        const ref = storage.ref().child(path);
+        const metadata = { contentType: 'image/jpeg' };
+        return ref.put(blob, metadata).then(snapshot => snapshot.ref.getDownloadURL())
+          .then(url => savePurchase(url))
+          .catch(err => {
+            console.warn('Storage upload failed, trying base64 fallback:', err);
+            // Fallback: store compressed image as data URL in Firestore (max ~800KB)
+            return blobToDataURL(blob).then(dataUrl => {
+              if (dataUrl.length > 900000) {
+                toast('Image still too large after compress. Saving without image.', 'warning');
+                return savePurchase('');
+              }
+              toast('Storage blocked – saving image inside record (fallback).', 'warning');
+              return savePurchase(dataUrl);
+            });
+          });
+      }).then(finish).catch(err => {
+        console.error('Image processing error:', err);
+        toast('Image error: ' + (err.message || err), 'error');
+        finish();
+      });
     } else {
       savePurchase('').then(finish).catch(err => {
         console.error('Purchase save error:', err);
@@ -1875,6 +1887,40 @@
         finish();
       });
     }
+  }
+
+  function compressImage(file, maxWidth, quality) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          let w = img.width, h = img.height;
+          if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          canvas.toBlob(function(blob) {
+            if (blob) resolve(blob);
+            else reject(new Error('Compression failed'));
+          }, 'image/jpeg', quality);
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function blobToDataURL(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
   }
 
   function resetPurchaseForm() {
