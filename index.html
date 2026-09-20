@@ -783,8 +783,9 @@
 <!-- SALE MODAL -->
 <div class="modal-overlay" id="saleModal">
   <div class="modal-box">
-    <div class="modal-header"><h2>Add Sale</h2><button class="modal-close" onclick="closeModal('saleModal')">&times;</button></div>
+    <div class="modal-header"><h2 id="saleModalTitle">Add Sale</h2><button class="modal-close" onclick="closeModal('saleModal')">&times;</button></div>
     <form id="saleForm">
+      <input type="hidden" id="saleId" value="" />
       <div class="form-row">
         <div class="form-group"><label>Date</label><input type="date" id="saleDate" required /></div>
         <div class="form-group"><label>Total Sales (£)</label><input type="number" id="saleTotal" step="0.01" required /></div>
@@ -809,8 +810,9 @@
 <!-- PURCHASE MODAL (with multiple items) -->
 <div class="modal-overlay" id="purchaseModal">
   <div class="modal-box">
-    <div class="modal-header"><h2>Add Purchase</h2><button class="modal-close" onclick="closeModal('purchaseModal')">&times;</button></div>
+    <div class="modal-header"><h2 id="purchaseModalTitle">Add Purchase</h2><button class="modal-close" onclick="closeModal('purchaseModal')">&times;</button></div>
     <form id="purchaseForm">
+      <input type="hidden" id="purchaseId" value="" />
       <div class="form-row">
         <div class="form-group"><label>Date</label><input type="date" id="purchaseDate" required /></div>
         <div class="form-group"><label>Supplier</label><input type="text" id="purchaseSupplier" placeholder="Supplier name" required /></div>
@@ -860,8 +862,9 @@
 <!-- EXPENSE MODAL -->
 <div class="modal-overlay" id="expenseModal">
   <div class="modal-box">
-    <div class="modal-header"><h2>Add Expense</h2><button class="modal-close" onclick="closeModal('expenseModal')">&times;</button></div>
+    <div class="modal-header"><h2 id="expenseModalTitle">Add Expense</h2><button class="modal-close" onclick="closeModal('expenseModal')">&times;</button></div>
     <form id="expenseForm">
+      <input type="hidden" id="expenseId" value="" />
       <div class="form-row">
         <div class="form-group"><label>Date</label><input type="date" id="expenseDate" required /></div>
         <div class="form-group"><label>Category</label><select id="expenseCategory"><option value="Electricity">Electricity</option><option value="Gas">Gas</option><option value="Water">Water</option><option value="Rent">Rent</option><option value="Staff">Staff</option><option value="Cleaning">Cleaning</option><option value="Repairs">Repairs</option><option value="Maintenance">Maintenance</option><option value="Marketing">Marketing</option><option value="Delivery">Delivery</option><option value="Equipment">Equipment</option><option value="Other">Other</option></select></div>
@@ -880,8 +883,9 @@
 <!-- INVENTORY MODAL -->
 <div class="modal-overlay" id="inventoryModal">
   <div class="modal-box">
-    <div class="modal-header"><h2>Add Inventory Item</h2><button class="modal-close" onclick="closeModal('inventoryModal')">&times;</button></div>
+    <div class="modal-header"><h2 id="inventoryModalTitle">Add Inventory Item</h2><button class="modal-close" onclick="closeModal('inventoryModal')">&times;</button></div>
     <form id="inventoryForm">
+      <input type="hidden" id="invId" value="" />
       <div class="form-row">
         <div class="form-group"><label>Item Name</label><input type="text" id="invName" required /></div>
         <div class="form-group"><label>Category</label><input type="text" id="invCategory" placeholder="Meat, Vegetable, etc." /></div>
@@ -903,8 +907,9 @@
 <!-- SUPPLIER MODAL -->
 <div class="modal-overlay" id="supplierModal">
   <div class="modal-box">
-    <div class="modal-header"><h2>Add Supplier</h2><button class="modal-close" onclick="closeModal('supplierModal')">&times;</button></div>
+    <div class="modal-header"><h2 id="supplierModalTitle">Add Supplier</h2><button class="modal-close" onclick="closeModal('supplierModal')">&times;</button></div>
     <form id="supplierForm">
+      <input type="hidden" id="supId" value="" />
       <div class="form-group"><label>Supplier Name</label><input type="text" id="supName" required /></div>
       <div class="form-row">
         <div class="form-group"><label>Contact Person</label><input type="text" id="supContact" /></div>
@@ -923,8 +928,9 @@
 <!-- EMPLOYEE MODAL -->
 <div class="modal-overlay" id="employeeModal">
   <div class="modal-box">
-    <div class="modal-header"><h2>Add Employee</h2><button class="modal-close" onclick="closeModal('employeeModal')">&times;</button></div>
+    <div class="modal-header"><h2 id="employeeModalTitle">Add Employee</h2><button class="modal-close" onclick="closeModal('employeeModal')">&times;</button></div>
     <form id="employeeForm">
+      <input type="hidden" id="empId" value="" />
       <div class="form-row">
         <div class="form-group"><label>Full Name</label><input type="text" id="empName" required /></div>
         <div class="form-group"><label>Position</label><input type="text" id="empPosition" placeholder="e.g. Manager, Chef" /></div>
@@ -946,8 +952,9 @@
 <!-- MENU MODAL -->
 <div class="modal-overlay" id="menuModal">
   <div class="modal-box">
-    <div class="modal-header"><h2>Add Menu Item</h2><button class="modal-close" onclick="closeModal('menuModal')">&times;</button></div>
+    <div class="modal-header"><h2 id="menuModalTitle">Add Menu Item</h2><button class="modal-close" onclick="closeModal('menuModal')">&times;</button></div>
     <form id="menuForm">
+      <input type="hidden" id="menuId" value="" />
       <div class="form-row">
         <div class="form-group"><label>Dish Name</label><input type="text" id="menuName" required /></div>
         <div class="form-group"><label>Category</label><select id="menuCategory"><option value="Shinwari">Shinwari</option><option value="BBQ">BBQ</option><option value="Karahi">Karahi</option><option value="Rice">Rice</option><option value="Breads">Breads</option><option value="Drinks">Drinks</option><option value="Desserts">Desserts</option><option value="Other">Other</option></select></div>
@@ -966,8 +973,9 @@
 <!-- WASTE MODAL -->
 <div class="modal-overlay" id="wasteModal">
   <div class="modal-box">
-    <div class="modal-header"><h2>Record Waste</h2><button class="modal-close" onclick="closeModal('wasteModal')">&times;</button></div>
+    <div class="modal-header"><h2 id="wasteModalTitle">Record Waste</h2><button class="modal-close" onclick="closeModal('wasteModal')">&times;</button></div>
     <form id="wasteForm">
+      <input type="hidden" id="wasteId" value="" />
       <div class="form-row">
         <div class="form-group"><label>Date</label><input type="date" id="wasteDate" required /></div>
         <div class="form-group"><label>Item</label><input type="text" id="wasteItem" required /></div>
@@ -1645,6 +1653,7 @@
 
   function handleSaleSubmit(e) {
     e.preventDefault();
+    const id = document.getElementById('saleId').value;
     const sale = {
       date: document.getElementById('saleDate').value,
       total: parseFloat(document.getElementById('saleTotal').value) || 0,
@@ -1654,14 +1663,24 @@
       other: parseFloat(document.getElementById('saleOther').value) || 0,
       customers: parseInt(document.getElementById('saleCustomers').value) || 0,
       notes: document.getElementById('saleNotes').value || '',
-      createdAt: new Date().toISOString()
+      updatedAt: new Date().toISOString()
     };
-    addDocument('sales', sale).then(() => {
+    const done = () => {
       closeModal('saleModal');
       document.getElementById('saleForm').reset();
+      document.getElementById('saleId').value = '';
       document.getElementById('saleDate').value = todayStr();
-      toast('Sale added!', 'success');
-    }).catch(err => toast('Error: ' + err.message, 'error'));
+      document.getElementById('saleModalTitle').textContent = 'Add Sale';
+      if (typeof renderAll === 'function') renderAll();
+    };
+    if (id) {
+      updateDocument('sales', id, sale).then(() => { toast('Sale updated!', 'success'); done(); })
+        .catch(err => toast('Error: ' + err.message, 'error'));
+    } else {
+      sale.createdAt = new Date().toISOString();
+      addDocument('sales', sale).then(() => { toast('Sale added!', 'success'); done(); })
+        .catch(err => toast('Error: ' + err.message, 'error'));
+    }
   }
 
   function deleteSale(id) {
@@ -1672,7 +1691,20 @@
   }
 
   function editSale(id) {
-    toast('Edit feature: click on sale row to edit (not implemented).', 'warning');
+    const sales = (window._data || {}).sales || [];
+    const s = sales.find(x => x.id === id);
+    if (!s) { toast('Sale not found.', 'error'); return; }
+    document.getElementById('saleId').value = s.id;
+    document.getElementById('saleDate').value = s.date || '';
+    document.getElementById('saleTotal').value = s.total || 0;
+    document.getElementById('saleCash').value = s.cash || 0;
+    document.getElementById('saleCard').value = s.card || 0;
+    document.getElementById('saleBank').value = s.bank || 0;
+    document.getElementById('saleOther').value = s.other || 0;
+    document.getElementById('saleCustomers').value = s.customers || 1;
+    document.getElementById('saleNotes').value = s.notes || '';
+    document.getElementById('saleModalTitle').textContent = 'Edit Sale';
+    openModal('saleModal');
   }
 
   function applySalesFilters() { renderSales(); }
@@ -1804,6 +1836,7 @@
     const btn = document.getElementById('purchaseSubmitBtn');
     if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
 
+    const purchaseId = document.getElementById('purchaseId').value;
     const purchase = {
       date: document.getElementById('purchaseDate').value,
       supplier: document.getElementById('purchaseSupplier').value,
@@ -1816,39 +1849,50 @@
       paid: paid,
       status: document.getElementById('purchasePaymentStatus').value,
       notes: document.getElementById('purchaseNotes').value || '',
-      imageUrl: '',
-      createdAt: new Date().toISOString()
+      imageUrl: window._existingPurchaseImage || '',
+      updatedAt: new Date().toISOString()
     };
 
     const savePurchase = (imageUrl) => {
-      if (imageUrl) purchase.imageUrl = imageUrl;
-      return addDocument('purchases', purchase).then(() => {
-        // Update inventory for each item
-        items.forEach(item => {
-          const inv = (window._data && window._data.inventory) || [];
-          const existing = inv.find(i => i.name.toLowerCase() === item.name.toLowerCase());
-          if (existing) {
-            const newQty = (existing.qty || 0) + item.qty;
-            updateDocument('inventory', existing.id, { qty: newQty, price: item.unitPrice,
-              supplier: purchase.supplier, lastPurchase: purchase.date });
-          } else {
-            addDocument('inventory', {
-              name: item.name,
-              category: item.category || 'Other',
-              qty: item.qty,
-              unit: item.unit || 'unit',
-              min: 5,
-              price: item.unitPrice,
-              supplier: purchase.supplier,
-              lastPurchase: purchase.date
-            });
-          }
-        });
+      if (imageUrl !== undefined && imageUrl !== null) {
+        if (imageUrl) purchase.imageUrl = imageUrl;
+        // if empty string and editing with no new file, keep existing
+      }
+      const afterSave = () => {
+        if (!purchaseId) {
+          // Only update inventory stock on NEW purchases
+          items.forEach(item => {
+            const inv = (window._data && window._data.inventory) || [];
+            const existing = inv.find(i => i.name.toLowerCase() === item.name.toLowerCase());
+            if (existing) {
+              const newQty = (existing.qty || 0) + item.qty;
+              updateDocument('inventory', existing.id, { qty: newQty, price: item.unitPrice,
+                supplier: purchase.supplier, lastPurchase: purchase.date });
+            } else {
+              addDocument('inventory', {
+                name: item.name,
+                category: item.category || 'Other',
+                qty: item.qty,
+                unit: item.unit || 'unit',
+                min: 5,
+                price: item.unitPrice,
+                supplier: purchase.supplier,
+                lastPurchase: purchase.date
+              });
+            }
+          });
+        }
         closeModal('purchaseModal');
         resetPurchaseForm();
-        toast('Purchase added!', 'success');
+        toast(purchaseId ? 'Purchase updated!' : 'Purchase added!', 'success');
         if (typeof renderAll === 'function') renderAll();
-      });
+      };
+      if (purchaseId) {
+        return updateDocument('purchases', purchaseId, purchase).then(afterSave);
+      } else {
+        purchase.createdAt = new Date().toISOString();
+        return addDocument('purchases', purchase).then(afterSave);
+      }
     };
 
     const finish = () => {
@@ -1860,8 +1904,8 @@
       if (btn) btn.textContent = 'Compressing image...';
       compressImage(file, 1000, 0.65).then(blob => blobToDataURL(blob)).then(dataUrl => {
         if (dataUrl.length > 900000) {
-          toast('Image too large even after compress. Saving purchase without image.', 'warning');
-          return savePurchase('');
+          toast('Image too large even after compress. Keeping previous image.', 'warning');
+          return savePurchase(window._existingPurchaseImage || '');
         }
         if (btn) btn.textContent = 'Saving...';
         return savePurchase(dataUrl);
@@ -1871,7 +1915,8 @@
         finish();
       });
     } else {
-      savePurchase('').then(finish).catch(err => {
+      // Keep existing image on edit if no new file chosen
+      savePurchase(window._existingPurchaseImage || '').then(finish).catch(err => {
         console.error('Purchase save error:', err);
         toast('Error: ' + (err.message || err), 'error');
         finish();
@@ -1915,6 +1960,9 @@
 
   function resetPurchaseForm() {
     document.getElementById('purchaseForm').reset();
+    document.getElementById('purchaseId').value = '';
+    window._existingPurchaseImage = '';
+    document.getElementById('purchaseModalTitle').textContent = 'Add Purchase';
     document.getElementById('purchaseDate').value = todayStr();
     clearPurchaseImage();
     const container = document.getElementById('purchaseItemsContainer');
@@ -1971,7 +2019,52 @@
     }).catch(err => toast('Error: ' + err.message, 'error'));
   }
 
-  function editPurchase(id) { toast('Edit feature not implemented.', 'warning'); }
+  function editPurchase(id) {
+    const purchases = (window._data || {}).purchases || [];
+    const p = purchases.find(x => x.id === id);
+    if (!p) { toast('Purchase not found.', 'error'); return; }
+    document.getElementById('purchaseId').value = p.id;
+    document.getElementById('purchaseDate').value = p.date || '';
+    document.getElementById('purchaseSupplier').value = p.supplier || '';
+    document.getElementById('purchaseInvoice').value = p.invoice || '';
+    document.getElementById('purchasePaymentStatus').value = p.status || 'unpaid';
+    document.getElementById('purchaseTax').value = p.tax || 0;
+    document.getElementById('purchaseDiscount').value = p.discount || 0;
+    document.getElementById('purchasePaid').value = p.paid || 0;
+    document.getElementById('purchaseNotes').value = p.notes || '';
+    // Fill items
+    const container = document.getElementById('purchaseItemsContainer');
+    container.innerHTML = '';
+    const items = p.items && p.items.length ? p.items : [{ name: '', category: '', qty: '', unit: '', unitPrice: '' }];
+    items.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      row.innerHTML = `
+        <div class="form-group"><input type="text" class="purchase-item-name" placeholder="Item name" value="${(item.name||'').replace(/"/g,'&quot;')}" required /></div>
+        <div class="form-group"><input type="text" class="purchase-item-category" placeholder="Category" value="${(item.category||'').replace(/"/g,'&quot;')}" /></div>
+        <div class="form-group"><input type="number" class="purchase-item-qty" step="0.01" placeholder="Qty" value="${item.qty||''}" required /></div>
+        <div class="form-group"><input type="text" class="purchase-item-unit" placeholder="Unit" value="${(item.unit||'').replace(/"/g,'&quot;')}" /></div>
+        <div class="form-group"><input type="number" class="purchase-item-price" step="0.01" placeholder="Unit price" value="${item.unitPrice||item.price||''}" required /></div>
+        <button type="button" class="btn btn-danger btn-sm" onclick="removePurchaseItemRow(this)"><i class="fas fa-trash"></i></button>
+      `;
+      container.appendChild(row);
+      row.querySelectorAll('input').forEach(inp => inp.addEventListener('input', calcPurchaseTotals));
+    });
+    calcPurchaseTotals();
+    // Existing image preview
+    clearPurchaseImage();
+    if (p.imageUrl) {
+      const preview = document.getElementById('purchaseImagePreview');
+      const img = document.getElementById('purchasePreviewImg');
+      if (img) img.src = p.imageUrl;
+      if (preview) preview.style.display = 'block';
+      window._existingPurchaseImage = p.imageUrl;
+    } else {
+      window._existingPurchaseImage = '';
+    }
+    document.getElementById('purchaseModalTitle').textContent = 'Edit Purchase';
+    openModal('purchaseModal');
+  }
 
   function applyPurchaseFilters() { renderPurchases(); }
 
@@ -2012,6 +2105,7 @@
 
   function handleInventorySubmit(e) {
     e.preventDefault();
+    const id = document.getElementById('invId').value;
     const item = {
       name: document.getElementById('invName').value,
       category: document.getElementById('invCategory').value || 'Other',
@@ -2020,13 +2114,23 @@
       min: parseFloat(document.getElementById('invMin').value) || 5,
       price: parseFloat(document.getElementById('invPrice').value) || 0,
       supplier: document.getElementById('invSupplier').value || '',
-      createdAt: new Date().toISOString()
+      updatedAt: new Date().toISOString()
     };
-    addDocument('inventory', item).then(() => {
+    const done = () => {
       closeModal('inventoryModal');
       document.getElementById('inventoryForm').reset();
-      toast('Inventory item added!', 'success');
-    }).catch(err => toast('Error: ' + err.message, 'error'));
+      document.getElementById('invId').value = '';
+      document.getElementById('inventoryModalTitle').textContent = 'Add Inventory Item';
+      if (typeof renderAll === 'function') renderAll();
+    };
+    if (id) {
+      updateDocument('inventory', id, item).then(() => { toast('Inventory updated!', 'success'); done(); })
+        .catch(err => toast('Error: ' + err.message, 'error'));
+    } else {
+      item.createdAt = new Date().toISOString();
+      addDocument('inventory', item).then(() => { toast('Inventory item added!', 'success'); done(); })
+        .catch(err => toast('Error: ' + err.message, 'error'));
+    }
   }
 
   function deleteInventory(id) {
@@ -2036,7 +2140,21 @@
     }).catch(err => toast('Error: ' + err.message, 'error'));
   }
 
-  function editInventory(id) { toast('Edit feature not implemented.', 'warning'); }
+  function editInventory(id) {
+    const inventory = (window._data || {}).inventory || [];
+    const i = inventory.find(x => x.id === id);
+    if (!i) { toast('Item not found.', 'error'); return; }
+    document.getElementById('invId').value = i.id;
+    document.getElementById('invName').value = i.name || '';
+    document.getElementById('invCategory').value = i.category || '';
+    document.getElementById('invQty').value = i.qty || 0;
+    document.getElementById('invUnit').value = i.unit || '';
+    document.getElementById('invMin').value = i.min || 5;
+    document.getElementById('invPrice').value = i.price || 0;
+    document.getElementById('invSupplier').value = i.supplier || '';
+    document.getElementById('inventoryModalTitle').textContent = 'Edit Inventory Item';
+    openModal('inventoryModal');
+  }
 
   function applyInventoryFilters() { renderInventory(); }
 
@@ -2076,6 +2194,7 @@
 
   function handleSupplierSubmit(e) {
     e.preventDefault();
+    const id = document.getElementById('supId').value;
     const supplier = {
       name: document.getElementById('supName').value,
       contact: document.getElementById('supContact').value || '',
@@ -2083,13 +2202,23 @@
       email: document.getElementById('supEmail').value || '',
       address: document.getElementById('supAddress').value || '',
       notes: document.getElementById('supNotes').value || '',
-      createdAt: new Date().toISOString()
+      updatedAt: new Date().toISOString()
     };
-    addDocument('suppliers', supplier).then(() => {
+    const done = () => {
       closeModal('supplierModal');
       document.getElementById('supplierForm').reset();
-      toast('Supplier added!', 'success');
-    }).catch(err => toast('Error: ' + err.message, 'error'));
+      document.getElementById('supId').value = '';
+      document.getElementById('supplierModalTitle').textContent = 'Add Supplier';
+      if (typeof renderAll === 'function') renderAll();
+    };
+    if (id) {
+      updateDocument('suppliers', id, supplier).then(() => { toast('Supplier updated!', 'success'); done(); })
+        .catch(err => toast('Error: ' + err.message, 'error'));
+    } else {
+      supplier.createdAt = new Date().toISOString();
+      addDocument('suppliers', supplier).then(() => { toast('Supplier added!', 'success'); done(); })
+        .catch(err => toast('Error: ' + err.message, 'error'));
+    }
   }
 
   function deleteSupplier(id) {
@@ -2099,7 +2228,20 @@
     }).catch(err => toast('Error: ' + err.message, 'error'));
   }
 
-  function editSupplier(id) { toast('Edit feature not implemented.', 'warning'); }
+  function editSupplier(id) {
+    const list = (window._data || {}).suppliers || [];
+    const s = list.find(x => x.id === id);
+    if (!s) { toast('Supplier not found.', 'error'); return; }
+    document.getElementById('supId').value = s.id;
+    document.getElementById('supName').value = s.name || '';
+    document.getElementById('supContact').value = s.contact || '';
+    document.getElementById('supPhone').value = s.phone || '';
+    document.getElementById('supEmail').value = s.email || '';
+    document.getElementById('supAddress').value = s.address || '';
+    document.getElementById('supNotes').value = s.notes || '';
+    document.getElementById('supplierModalTitle').textContent = 'Edit Supplier';
+    openModal('supplierModal');
+  }
 
   // ================================================================
   // EXPENSES
@@ -2129,6 +2271,7 @@
 
   function handleExpenseSubmit(e) {
     e.preventDefault();
+    const id = document.getElementById('expenseId').value;
     const expense = {
       date: document.getElementById('expenseDate').value,
       category: document.getElementById('expenseCategory').value,
@@ -2136,14 +2279,24 @@
       amount: parseFloat(document.getElementById('expenseAmount').value) || 0,
       method: document.getElementById('expenseMethod').value,
       notes: document.getElementById('expenseNotes').value || '',
-      createdAt: new Date().toISOString()
+      updatedAt: new Date().toISOString()
     };
-    addDocument('expenses', expense).then(() => {
+    const done = () => {
       closeModal('expenseModal');
       document.getElementById('expenseForm').reset();
+      document.getElementById('expenseId').value = '';
       document.getElementById('expenseDate').value = todayStr();
-      toast('Expense added!', 'success');
-    }).catch(err => toast('Error: ' + err.message, 'error'));
+      document.getElementById('expenseModalTitle').textContent = 'Add Expense';
+      if (typeof renderAll === 'function') renderAll();
+    };
+    if (id) {
+      updateDocument('expenses', id, expense).then(() => { toast('Expense updated!', 'success'); done(); })
+        .catch(err => toast('Error: ' + err.message, 'error'));
+    } else {
+      expense.createdAt = new Date().toISOString();
+      addDocument('expenses', expense).then(() => { toast('Expense added!', 'success'); done(); })
+        .catch(err => toast('Error: ' + err.message, 'error'));
+    }
   }
 
   function deleteExpense(id) {
@@ -2153,7 +2306,20 @@
     }).catch(err => toast('Error: ' + err.message, 'error'));
   }
 
-  function editExpense(id) { toast('Edit feature not implemented.', 'warning'); }
+  function editExpense(id) {
+    const expenses = (window._data || {}).expenses || [];
+    const e = expenses.find(x => x.id === id);
+    if (!e) { toast('Expense not found.', 'error'); return; }
+    document.getElementById('expenseId').value = e.id;
+    document.getElementById('expenseDate').value = e.date || '';
+    document.getElementById('expenseCategory').value = e.category || 'Other';
+    document.getElementById('expenseDescription').value = e.description || '';
+    document.getElementById('expenseAmount').value = e.amount || 0;
+    document.getElementById('expenseMethod').value = e.method || 'cash';
+    document.getElementById('expenseNotes').value = e.notes || '';
+    document.getElementById('expenseModalTitle').textContent = 'Edit Expense';
+    openModal('expenseModal');
+  }
 
   function applyExpenseFilters() { renderExpenses(); }
 
@@ -2322,6 +2488,7 @@
 
   function handleEmployeeSubmit(e) {
     e.preventDefault();
+    const id = document.getElementById('empId').value;
     const emp = {
       name: document.getElementById('empName').value,
       position: document.getElementById('empPosition').value || '',
@@ -2330,13 +2497,23 @@
       start: document.getElementById('empStart').value || '',
       status: document.getElementById('empStatus').value,
       notes: document.getElementById('empNotes').value || '',
-      createdAt: new Date().toISOString()
+      updatedAt: new Date().toISOString()
     };
-    addDocument('employees', emp).then(() => {
+    const done = () => {
       closeModal('employeeModal');
       document.getElementById('employeeForm').reset();
-      toast('Employee added!', 'success');
-    }).catch(err => toast('Error: ' + err.message, 'error'));
+      document.getElementById('empId').value = '';
+      document.getElementById('employeeModalTitle').textContent = 'Add Employee';
+      if (typeof renderAll === 'function') renderAll();
+    };
+    if (id) {
+      updateDocument('employees', id, emp).then(() => { toast('Employee updated!', 'success'); done(); })
+        .catch(err => toast('Error: ' + err.message, 'error'));
+    } else {
+      emp.createdAt = new Date().toISOString();
+      addDocument('employees', emp).then(() => { toast('Employee added!', 'success'); done(); })
+        .catch(err => toast('Error: ' + err.message, 'error'));
+    }
   }
 
   function deleteEmployee(id) {
@@ -2346,7 +2523,21 @@
     }).catch(err => toast('Error: ' + err.message, 'error'));
   }
 
-  function editEmployee(id) { toast('Edit feature not implemented.', 'warning'); }
+  function editEmployee(id) {
+    const list = (window._data || {}).employees || [];
+    const e = list.find(x => x.id === id);
+    if (!e) { toast('Employee not found.', 'error'); return; }
+    document.getElementById('empId').value = e.id;
+    document.getElementById('empName').value = e.name || '';
+    document.getElementById('empPosition').value = e.position || '';
+    document.getElementById('empPhone').value = e.phone || '';
+    document.getElementById('empEmail').value = e.email || '';
+    document.getElementById('empStart').value = e.start || '';
+    document.getElementById('empStatus').value = e.status || 'active';
+    document.getElementById('empNotes').value = e.notes || '';
+    document.getElementById('employeeModalTitle').textContent = 'Edit Employee';
+    openModal('employeeModal');
+  }
 
   // ================================================================
   // MENU
@@ -2377,6 +2568,7 @@
 
   function handleMenuSubmit(e) {
     e.preventDefault();
+    const id = document.getElementById('menuId').value;
     const item = {
       name: document.getElementById('menuName').value,
       category: document.getElementById('menuCategory').value,
@@ -2384,13 +2576,23 @@
       cost: parseFloat(document.getElementById('menuCost').value) || 0,
       description: document.getElementById('menuDesc').value || '',
       available: document.getElementById('menuAvailable').value,
-      createdAt: new Date().toISOString()
+      updatedAt: new Date().toISOString()
     };
-    addDocument('menu', item).then(() => {
+    const done = () => {
       closeModal('menuModal');
       document.getElementById('menuForm').reset();
-      toast('Menu item added!', 'success');
-    }).catch(err => toast('Error: ' + err.message, 'error'));
+      document.getElementById('menuId').value = '';
+      document.getElementById('menuModalTitle').textContent = 'Add Menu Item';
+      if (typeof renderAll === 'function') renderAll();
+    };
+    if (id) {
+      updateDocument('menu', id, item).then(() => { toast('Menu item updated!', 'success'); done(); })
+        .catch(err => toast('Error: ' + err.message, 'error'));
+    } else {
+      item.createdAt = new Date().toISOString();
+      addDocument('menu', item).then(() => { toast('Menu item added!', 'success'); done(); })
+        .catch(err => toast('Error: ' + err.message, 'error'));
+    }
   }
 
   function deleteMenu(id) {
@@ -2400,7 +2602,20 @@
     }).catch(err => toast('Error: ' + err.message, 'error'));
   }
 
-  function editMenu(id) { toast('Edit feature not implemented.', 'warning'); }
+  function editMenu(id) {
+    const list = (window._data || {}).menu || [];
+    const m = list.find(x => x.id === id);
+    if (!m) { toast('Menu item not found.', 'error'); return; }
+    document.getElementById('menuId').value = m.id;
+    document.getElementById('menuName').value = m.name || '';
+    document.getElementById('menuCategory').value = m.category || 'Other';
+    document.getElementById('menuSell').value = m.sell || 0;
+    document.getElementById('menuCost').value = m.cost || 0;
+    document.getElementById('menuDesc').value = m.description || '';
+    document.getElementById('menuAvailable').value = m.available || 'yes';
+    document.getElementById('menuModalTitle').textContent = 'Edit Menu Item';
+    openModal('menuModal');
+  }
 
   // ================================================================
   // WASTE
@@ -2431,6 +2646,7 @@
 
   function handleWasteSubmit(e) {
     e.preventDefault();
+    const id = document.getElementById('wasteId').value;
     const waste = {
       date: document.getElementById('wasteDate').value,
       item: document.getElementById('wasteItem').value,
@@ -2439,14 +2655,24 @@
       cost: parseFloat(document.getElementById('wasteCost').value) || 0,
       employee: document.getElementById('wasteEmployee').value || '',
       notes: document.getElementById('wasteNotes').value || '',
-      createdAt: new Date().toISOString()
+      updatedAt: new Date().toISOString()
     };
-    addDocument('waste', waste).then(() => {
+    const done = () => {
       closeModal('wasteModal');
       document.getElementById('wasteForm').reset();
+      document.getElementById('wasteId').value = '';
       document.getElementById('wasteDate').value = todayStr();
-      toast('Waste recorded!', 'success');
-    }).catch(err => toast('Error: ' + err.message, 'error'));
+      document.getElementById('wasteModalTitle').textContent = 'Record Waste';
+      if (typeof renderAll === 'function') renderAll();
+    };
+    if (id) {
+      updateDocument('waste', id, waste).then(() => { toast('Waste record updated!', 'success'); done(); })
+        .catch(err => toast('Error: ' + err.message, 'error'));
+    } else {
+      waste.createdAt = new Date().toISOString();
+      addDocument('waste', waste).then(() => { toast('Waste recorded!', 'success'); done(); })
+        .catch(err => toast('Error: ' + err.message, 'error'));
+    }
   }
 
   function deleteWaste(id) {
@@ -2456,7 +2682,21 @@
     }).catch(err => toast('Error: ' + err.message, 'error'));
   }
 
-  function editWaste(id) { toast('Edit feature not implemented.', 'warning'); }
+  function editWaste(id) {
+    const list = (window._data || {}).waste || [];
+    const w = list.find(x => x.id === id);
+    if (!w) { toast('Waste record not found.', 'error'); return; }
+    document.getElementById('wasteId').value = w.id;
+    document.getElementById('wasteDate').value = w.date || '';
+    document.getElementById('wasteItem').value = w.item || '';
+    document.getElementById('wasteQty').value = w.qty || 0;
+    document.getElementById('wasteReason').value = w.reason || 'Other';
+    document.getElementById('wasteCost').value = w.cost || 0;
+    document.getElementById('wasteEmployee').value = w.employee || '';
+    document.getElementById('wasteNotes').value = w.notes || '';
+    document.getElementById('wasteModalTitle').textContent = 'Edit Waste Record';
+    openModal('wasteModal');
+  }
 
   function applyWasteFilters() { renderWaste(); }
 
