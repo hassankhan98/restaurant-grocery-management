@@ -13,6 +13,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
   <style>
     /* ===== CSS VARIABLES / THEMING ===== */
     :root {
@@ -501,8 +502,8 @@
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Date</th><th>Invoice</th><th>Supplier</th><th>Items</th><th>Total</th><th>Paid</th><th>Status</th><th>Actions</th></tr></thead>
-          <tbody id="purchasesTableBody"><tr><td colspan="8" class="text-muted text-center">No purchases recorded.</td></tr></tbody>
+          <thead><tr><th>Date</th><th>Invoice</th><th>Supplier</th><th>Items</th><th>Total</th><th>Paid</th><th>Status</th><th>Bill</th><th>Actions</th></tr></thead>
+          <tbody id="purchasesTableBody"><tr><td colspan="9" class="text-muted text-center">No purchases recorded.</td></tr></tbody>
         </table>
       </div>
     </section>
@@ -842,7 +843,16 @@
       </div>
       <div class="form-group"><label>Paid Amount (£)</label><input type="number" id="purchasePaid" step="0.01" value="0" /></div>
       <div class="form-group"><label>Notes</label><input type="text" id="purchaseNotes" placeholder="Optional" /></div>
-      <button type="submit" class="btn btn-primary w-full">Save Purchase</button>
+      <div class="form-group">
+        <label>Invoice / Bill Image</label>
+        <input type="file" id="purchaseImage" accept="image/*" capture="environment" />
+        <small class="text-muted" style="display:block;margin-top:0.3rem;font-size:0.75rem;">Upload photo of invoice or bill (JPG, PNG, max 5MB)</small>
+        <div id="purchaseImagePreview" style="margin-top:0.5rem;display:none;">
+          <img id="purchasePreviewImg" src="" alt="Preview" style="max-width:100%;max-height:180px;border-radius:8px;border:1px solid var(--border-color);" />
+          <button type="button" class="btn btn-sm btn-danger" style="margin-top:0.4rem;" onclick="clearPurchaseImage()"><i class="fas fa-times"></i> Remove</button>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary w-full" id="purchaseSubmitBtn">Save Purchase</button>
     </form>
   </div>
 </div>
@@ -1081,6 +1091,7 @@
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.firestore();
+  const storage = firebase.storage();
 
   // ================================================================
   // GLOBALS
@@ -1170,6 +1181,7 @@
     // Form submissions
     document.getElementById('saleForm').addEventListener('submit', handleSaleSubmit);
     document.getElementById('purchaseForm').addEventListener('submit', handlePurchaseSubmit);
+    setupPurchaseImagePreview();
     document.getElementById('expenseForm').addEventListener('submit', handleExpenseSubmit);
     document.getElementById('inventoryForm').addEventListener('submit', handleInventorySubmit);
     document.getElementById('supplierForm').addEventListener('submit', handleSupplierSubmit);
@@ -1684,12 +1696,15 @@
     const purchases = (window._data || {}).purchases || [];
     const tbody = document.getElementById('purchasesTableBody');
     if (purchases.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="8" class="text-muted text-center">No purchases recorded.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="9" class="text-muted text-center">No purchases recorded.</td></tr>';
       return;
     }
     const sorted = [...purchases].sort((a, b) => b.date.localeCompare(a.date));
-    tbody.innerHTML = sorted.map(p =>
-      `<tr>
+    tbody.innerHTML = sorted.map(p => {
+      const billCell = p.imageUrl
+        ? `<a href="${p.imageUrl}" target="_blank" title="View invoice image"><img src="${p.imageUrl}" alt="Bill" style="width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid var(--border-color);cursor:pointer;" /></a>`
+        : '<span class="text-muted">—</span>';
+      return `<tr>
         <td>${formatDate(p.date)}</td>
         <td>${p.invoice || '—'}</td>
         <td>${p.supplier}</td>
@@ -1697,12 +1712,13 @@
         <td>${formatCurrency(p.grandTotal || p.total || 0)}</td>
         <td>${formatCurrency(p.paid || 0)}</td>
         <td><span class="badge-status ${p.status || 'unpaid'}">${p.status || 'Unpaid'}</span></td>
+        <td>${billCell}</td>
         <td>
           <button class="btn btn-sm btn-outline" onclick="editPurchase('${p.id}')"><i class="fas fa-edit"></i></button>
           <button class="btn btn-sm btn-danger" onclick="deletePurchase('${p.id}')"><i class="fas fa-trash"></i></button>
         </td>
-      </tr>`
-    ).join('');
+      </tr>`;
+    }).join('');
   }
 
   // Dynamic rows for purchase items
@@ -1777,12 +1793,21 @@
     const discount = parseFloat(document.getElementById('purchaseDiscount').value) || 0;
     const grandTotal = parseFloat(document.getElementById('purchaseGrandTotal').value) || 0;
     const paid = parseFloat(document.getElementById('purchasePaid').value) || 0;
+    const fileInput = document.getElementById('purchaseImage');
+    const file = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+
+    if (file && file.size > 5 * 1024 * 1024) {
+      toast('Image too large. Max 5MB allowed.', 'warning');
+      return;
+    }
+
+    const btn = document.getElementById('purchaseSubmitBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
 
     const purchase = {
       date: document.getElementById('purchaseDate').value,
       supplier: document.getElementById('purchaseSupplier').value,
-      invoice: document.getElementById('purchaseInvoice').value || 'INV-' + String(Math.floor(Math.random() * 9000) +
-        1000),
+      invoice: document.getElementById('purchaseInvoice').value || 'INV-' + String(Math.floor(Math.random() * 9000) + 1000),
       items: items,
       subtotal: subtotal,
       tax: tax,
@@ -1791,54 +1816,116 @@
       paid: paid,
       status: document.getElementById('purchasePaymentStatus').value,
       notes: document.getElementById('purchaseNotes').value || '',
+      imageUrl: '',
       createdAt: new Date().toISOString()
     };
 
-    addDocument('purchases', purchase).then(() => {
-      // Update inventory for each item
-      items.forEach(item => {
-        // Check if inventory exists, update or add
-        const inv = window._data.inventory || [];
-        const existing = inv.find(i => i.name.toLowerCase() === item.name.toLowerCase());
-        if (existing) {
-          // update qty
-          const newQty = (existing.qty || 0) + item.qty;
-          updateDocument('inventory', existing.id, { qty: newQty, price: item.unitPrice,
-            supplier: purchase.supplier, lastPurchase: purchase.date });
-        } else {
-          // add new inventory item
-          addDocument('inventory', {
-            name: item.name,
-            category: item.category || 'Other',
-            qty: item.qty,
-            unit: item.unit || 'unit',
-            min: 5,
-            price: item.unitPrice,
-            supplier: purchase.supplier,
-            lastPurchase: purchase.date
-          });
-        }
+    const savePurchase = (imageUrl) => {
+      if (imageUrl) purchase.imageUrl = imageUrl;
+      return addDocument('purchases', purchase).then(() => {
+        // Update inventory for each item
+        items.forEach(item => {
+          const inv = (window._data && window._data.inventory) || [];
+          const existing = inv.find(i => i.name.toLowerCase() === item.name.toLowerCase());
+          if (existing) {
+            const newQty = (existing.qty || 0) + item.qty;
+            updateDocument('inventory', existing.id, { qty: newQty, price: item.unitPrice,
+              supplier: purchase.supplier, lastPurchase: purchase.date });
+          } else {
+            addDocument('inventory', {
+              name: item.name,
+              category: item.category || 'Other',
+              qty: item.qty,
+              unit: item.unit || 'unit',
+              min: 5,
+              price: item.unitPrice,
+              supplier: purchase.supplier,
+              lastPurchase: purchase.date
+            });
+          }
+        });
+        closeModal('purchaseModal');
+        resetPurchaseForm();
+        toast('Purchase added!', 'success');
+        if (typeof renderAll === 'function') renderAll();
       });
-      closeModal('purchaseModal');
-      document.getElementById('purchaseForm').reset();
-      document.getElementById('purchaseDate').value = todayStr();
-      // Reset items to one row
-      const container = document.getElementById('purchaseItemsContainer');
-      container.innerHTML = `
-        <div class="item-row">
-          <div class="form-group"><input type="text" class="purchase-item-name" placeholder="Item name" required /></div>
-          <div class="form-group"><input type="text" class="purchase-item-category" placeholder="Category" /></div>
-          <div class="form-group"><input type="number" class="purchase-item-qty" step="0.01" placeholder="Qty" required /></div>
-          <div class="form-group"><input type="text" class="purchase-item-unit" placeholder="Unit" /></div>
-          <div class="form-group"><input type="number" class="purchase-item-price" step="0.01" placeholder="Unit price" required /></div>
-          <button type="button" class="btn btn-danger btn-sm" onclick="removePurchaseItemRow(this)"><i class="fas fa-trash"></i></button>
-        </div>
-      `;
-      document.querySelectorAll('#purchaseItemsContainer input').forEach(inp => inp.addEventListener('input',
-        calcPurchaseTotals));
-      calcPurchaseTotals();
-      toast('Purchase added!', 'success');
-    }).catch(err => toast('Error: ' + err.message, 'error'));
+    };
+
+    const finish = () => {
+      if (btn) { btn.disabled = false; btn.textContent = 'Save Purchase'; }
+    };
+
+    if (file) {
+      // Upload image to Firebase Storage
+      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+      const path = 'invoices/' + Date.now() + '_' + Math.random().toString(36).slice(2, 8) + '.' + ext;
+      const ref = storage.ref().child(path);
+      ref.put(file).then(snapshot => snapshot.ref.getDownloadURL())
+        .then(url => savePurchase(url))
+        .then(finish)
+        .catch(err => {
+          console.error('Image upload error:', err);
+          toast('Image upload failed: ' + (err.message || err.code || 'check Storage rules'), 'error');
+          finish();
+        });
+    } else {
+      savePurchase('').then(finish).catch(err => {
+        console.error('Purchase save error:', err);
+        toast('Error: ' + (err.message || err), 'error');
+        finish();
+      });
+    }
+  }
+
+  function resetPurchaseForm() {
+    document.getElementById('purchaseForm').reset();
+    document.getElementById('purchaseDate').value = todayStr();
+    clearPurchaseImage();
+    const container = document.getElementById('purchaseItemsContainer');
+    container.innerHTML = `
+      <div class="item-row">
+        <div class="form-group"><input type="text" class="purchase-item-name" placeholder="Item name" required /></div>
+        <div class="form-group"><input type="text" class="purchase-item-category" placeholder="Category" /></div>
+        <div class="form-group"><input type="number" class="purchase-item-qty" step="0.01" placeholder="Qty" required /></div>
+        <div class="form-group"><input type="text" class="purchase-item-unit" placeholder="Unit" /></div>
+        <div class="form-group"><input type="number" class="purchase-item-price" step="0.01" placeholder="Unit price" required /></div>
+        <button type="button" class="btn btn-danger btn-sm" onclick="removePurchaseItemRow(this)"><i class="fas fa-trash"></i></button>
+      </div>
+    `;
+    document.querySelectorAll('#purchaseItemsContainer input').forEach(inp => inp.addEventListener('input', calcPurchaseTotals));
+    calcPurchaseTotals();
+  }
+
+  function clearPurchaseImage() {
+    const input = document.getElementById('purchaseImage');
+    if (input) input.value = '';
+    const preview = document.getElementById('purchaseImagePreview');
+    const img = document.getElementById('purchasePreviewImg');
+    if (preview) preview.style.display = 'none';
+    if (img) img.src = '';
+  }
+
+  function setupPurchaseImagePreview() {
+    const input = document.getElementById('purchaseImage');
+    if (!input || input._previewBound) return;
+    input._previewBound = true;
+    input.addEventListener('change', function() {
+      const file = this.files && this.files[0];
+      const preview = document.getElementById('purchaseImagePreview');
+      const img = document.getElementById('purchasePreviewImg');
+      if (!file) { clearPurchaseImage(); return; }
+      if (file.size > 5 * 1024 * 1024) {
+        toast('Image too large. Max 5MB.', 'warning');
+        clearPurchaseImage();
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        if (img) img.src = ev.target.result;
+        if (preview) preview.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    });
   }
 
   function deletePurchase(id) {
